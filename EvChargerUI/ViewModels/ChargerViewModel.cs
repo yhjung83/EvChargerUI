@@ -2068,7 +2068,7 @@ namespace EvChargerUI.ViewModels
         {
             DisposeReservationWaitingTimer();
             
-            _reservationWaitingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(300) };
+            _reservationWaitingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(300) }; // NOTE: RESV TIMER
             _reservationWaitingTimer.Tick += ReservationWaitingTimer_Tick;
             _reservationWaitingTimer.Start();
             _logger.Info("[UI] Reservation waiting timer started (5 minutes)");

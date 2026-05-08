@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Reflection;
@@ -144,6 +145,23 @@ namespace EvChargerUI.Services.DspControl.Chaevi
                 {
                     lock (_rxDatas[channel])
                     {
+                        var hexBuilder = new StringBuilder(values.Length * 12);
+                        for (int i = 0; i < values.Length; i++)
+                        {
+                            if (hexBuilder.Length > 0)
+                            {
+                                hexBuilder.Append(' ');
+                            }
+
+                            int registerAddr = 400 + i;
+                            hexBuilder.Append('[')
+                                      .Append(registerAddr)
+                                      .Append("]=0x")
+                                      .Append(values[i].ToString("X4"));
+                        }
+
+                        _logger.Debug($"RxData(ch={channel}): {hexBuilder}");
+                        Debug.WriteLine($"RxData(ch={channel}): {hexBuilder}");
                         _rxDatas[channel].LoadFromRawData(values);
                     }
                     IsConnected = true; // Success

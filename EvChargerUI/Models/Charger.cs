@@ -2757,21 +2757,20 @@ namespace EvChargerUI.Models
             }
 #endif
             // TODO: 모든 채널에 대해 알람 전송
-            // foreach (var channel in _channels)
-            // {
-            //     if (channel == null) continue;
-                
-            //     string faultCode = "";
-            //     try
-            //     {
-            //         bool emergencyRaised =
-            //             _isEmergency ||
-            //             AppSettingsManager.EvCommSettings.EVSE_EmergencyStop == 1;
+            foreach (var channel in _channels)
+            {
+                if (channel == null) continue;
+     
+                string faultCode = "";
 
-            //         if (emergencyRaised)
-            //         {
-            //             faultCode = "901";
-            //         }
+                bool emergencyRaised =
+                    _isEmergency ||
+                    AppSettingsManager.EvCommSettings.EVSE_EmergencyStop == 1;
+
+                if (emergencyRaised)
+                {
+                    faultCode = "901";
+                }
             //         else if (IsPmsDisconnected)
             //         {
             //             faultCode = "0904";
@@ -2793,13 +2792,13 @@ namespace EvChargerUI.Models
             //         faultCode = "0501";
             //     }
                 
-            //     string normalizedFaultCode = NormalizeAlarmCode(faultCode);
+                string normalizedFaultCode = NormalizeAlarmCode(faultCode);
 
-            //     // 경보 발생 시 FaultCode 저장 (해제 시 사용)
-            //     _channelFaultCodes[channel.ChannelNo] = normalizedFaultCode;
+                // 경보 발생 시 FaultCode 저장 (해제 시 사용)
+                _channelFaultCodes[channel.ChannelNo] = normalizedFaultCode;
 
-            //     _evCommService.SendAlarmHistory(channel.StationId, channel.ChargerId, "0", DateTime.Now.ToString("yyyyMMddHHmmss"), normalizedFaultCode);
-            // }
+                _evCommService.SendAlarmHistory(channel.StationId, channel.ChargerId, "0", DateTime.Now.ToString("yyyyMMddHHmmss"), normalizedFaultCode);
+            }
 #if false
             if (_channels.Length > 0 && _channels[0] != null)
             {
@@ -2957,12 +2956,12 @@ namespace EvChargerUI.Models
         private async void PerformUpdate(object sender, EventArgs e)
         {
 
-            _logger.Debug("[In-Process Update__PerformUpdate] 시작.");
+            // // _logger.Debug("[In-Process Update__PerformUpdate] 시작.");
 
             // 중복 실행 방지
             if (_isUpdateInProgress)
             {
-                _logger.Debug("[In-Process Update] 이미 업데이트가 진행 중이므로 건너뜁니다.");
+                // // _logger.Debug("[In-Process Update] 이미 업데이트가 진행 중이므로 건너뜁니다.");
                 return;
             }
 
@@ -2978,7 +2977,7 @@ namespace EvChargerUI.Models
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 string updateDir = Path.Combine(baseDir, "update");
 
-                _logger.Debug("[In-Process Update] 경로 체크.");
+                // _logger.Debug("[In-Process Update] 경로 체크.");
 
                 bool updateDirExists = await Task.Run(() => Directory.Exists(updateDir));
                 if (!updateDirExists)
@@ -2990,7 +2989,7 @@ namespace EvChargerUI.Models
                     return;
                 }
 
-                _logger.Debug("[In-Process Update] 업데이트 구성 요소 존재 여부 확인.");
+                // _logger.Debug("[In-Process Update] 업데이트 구성 요소 존재 여부 확인.");
 
                 // 2. 업데이트 구성 요소 존재 여부 확인
                 string newExePath = Path.Combine(updateDir, "EvChargerUI.exe");
@@ -3001,7 +3000,7 @@ namespace EvChargerUI.Models
                 bool frontUpdateDirExists = await Task.Run(() => Directory.Exists(frontUpdatePath));
 
                 // 업데이트할 내용이 없으면 폴더 정리 후 종료
-                _logger.Debug("[In-Process Update] 업데이트할 내용이 없으면 폴더 정리 후 종료.");
+                // _logger.Debug("[In-Process Update] 업데이트할 내용이 없으면 폴더 정리 후 종료.");
 
                 if (!newExeExists && !frontUpdateDirExists)
                 {
@@ -3015,7 +3014,7 @@ namespace EvChargerUI.Models
                 }
 
                 // 3. 충전기 유휴 상태 확인 (모든 업데이트 유형에 필요)
-                _logger.Debug("[In-Process Update] 충전기 유휴 상태 확인 (모든 업데이트 유형에 필요).");
+                // _logger.Debug("[In-Process Update] 충전기 유휴 상태 확인 (모든 업데이트 유형에 필요).");
                 var mainVm = ((App)Application.Current).MainView?.DataContext as ViewModels.MainViewModel;
                 if (mainVm == null || (mainVm.LeftChargerView == null))
                 {
@@ -3032,10 +3031,10 @@ namespace EvChargerUI.Models
                 bool isLeftIdle = leftVm?.CurrentChargeSequence == Commons.Enum.ChargeSequence.SelectConnector || leftVm?.CurrentChargeSequence == Commons.Enum.ChargeSequence.Completed;
                 bool isRightIdle = rightVm == null || rightVm.CurrentChargeSequence == Commons.Enum.ChargeSequence.SelectConnector || rightVm.CurrentChargeSequence == Commons.Enum.ChargeSequence.Completed;
 
-                _logger.Debug("[In-Process Update] 충전 완료 업데이트 시도.");
+                // _logger.Debug("[In-Process Update] 충전 완료 업데이트 시도.");
                 if (!isLeftIdle || !isRightIdle)
                 {
-                    _logger.Info("[In-Process Update] 업데이트가 대기 중이지만 충전기가 유휴 상태가 아닙니다. 다음 주기에 다시 확인합니다.");
+                    // _logger.Info("[In-Process Update] 업데이트가 대기 중이지만 충전기가 유휴 상태가 아닙니다. 다음 주기에 다시 확인합니다.");
                     lock (_timerLock)
                     {
                         _updateCheckTimer.Start();
@@ -3044,9 +3043,9 @@ namespace EvChargerUI.Models
                 }
 
                 // 4. 업데이트 수행
-                _logger.Debug("[In-Process Update__PerformUpdate] 업데이트 수행.");
+                // _logger.Debug("[In-Process Update__PerformUpdate] 업데이트 수행.");
                 _isUpdateInProgress = true;
-                _logger.Info("[In-Process Update] 충전기가 유휴 상태입니다. 업데이트를 시작합니다.");
+                // _logger.Info("[In-Process Update] 충전기가 유휴 상태입니다. 업데이트를 시작합니다.");
 
                 await Task.Run(async () =>
                 {
@@ -3055,10 +3054,10 @@ namespace EvChargerUI.Models
                         // UpdateFrontFile 폴더가 존재하면 폴더 자체를 복사
                         if (frontUpdateDirExists)
                         {
-                            _logger.Info("[In-Process Update] UpdateFrontFile 폴더를 발견했습니다. 폴더를 복사합니다.");
+                            // _logger.Info("[In-Process Update] UpdateFrontFile 폴더를 발견했습니다. 폴더를 복사합니다.");
                             string destinationPath = Path.Combine(baseDir, new DirectoryInfo(frontUpdatePath).Name);
                             CopyDirectory(frontUpdatePath, destinationPath, true);
-                            _logger.Info("[In-Process Update] UpdateFrontFile 폴더 복사가 완료되었습니다.");
+                            // _logger.Info("[In-Process Update] UpdateFrontFile 폴더 복사가 완료되었습니다.");
                         }
 
                         // 새 실행 파일이 있으면 교체 후 프로그램 종료
@@ -3069,26 +3068,26 @@ namespace EvChargerUI.Models
 
                             if (originFileExists)
                             {
-                                _logger.Info($"[In-Process Update] 실행 중인 EXE 이름 변경: {originExePath}");
+                                // _logger.Info($"[In-Process Update] 실행 중인 EXE 이름 변경: {originExePath}");
                                 File.Move(originExePath, backupExePath);
-                                _logger.Info("[In-Process Update] 이름 변경 성공.");
+                                // _logger.Info("[In-Process Update] 이름 변경 성공.");
                             }
                             else
                             {
-                                _logger.Info($"[In-Process Update] 원본 EXE를 찾을 수 없습니다. 복사만 진행합니다.");
+                                // _logger.Info($"[In-Process Update] 원본 EXE를 찾을 수 없습니다. 복사만 진행합니다.");
                             }
 
-                            _logger.Info($"[In-Process Update] 새 EXE 복사 중: {newExePath}");
+                            // _logger.Info($"[In-Process Update] 새 EXE 복사 중: {newExePath}");
                             File.Copy(newExePath, originExePath, true);
-                            _logger.Info("[In-Process Update] 복사 성공.");
+                            // _logger.Info("[In-Process Update] 복사 성공.");
 
                             // EXE 업데이트 시에만 프로그램 종료
-                            _logger.Info("[In-Process Update] 업데이트 파일 정리 중.");
+                            // _logger.Info("[In-Process Update] 업데이트 파일 정리 중.");
                             Directory.Delete(updateDir, true);
 
                             await Application.Current.Dispatcher.InvokeAsync(() =>
                             {
-                                _logger.Info("[In-Process Update] EXE 업데이트 성공. 프로그램을 종료합니다.");
+                                // _logger.Info("[In-Process Update] EXE 업데이트 성공. 프로그램을 종료합니다.");
                                 AppSettingsManager.EvCommSettings.LastUiUpdateDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                                 AppSettingsManager.Save();
                                 Application.Current.Shutdown();
@@ -3096,13 +3095,13 @@ namespace EvChargerUI.Models
                         }
                         else // 프론트 파일만 업데이트된 경우
                         {
-                            _logger.Info("[In-Process Update] 프론트 파일만 업데이트 완료. 정리합니다.");
+                            // _logger.Info("[In-Process Update] 프론트 파일만 업데이트 완료. 정리합니다.");
                             Directory.Delete(updateDir, true);
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error($"[In-Process Update] 파일 작업 실패: {ex.Message}");
+                        // _logger.Error($"[In-Process Update] 파일 작업 실패: {ex.Message}");
                     }
                     finally
                     {
@@ -3123,7 +3122,7 @@ namespace EvChargerUI.Models
             }
             catch (Exception ex)
             {
-                _logger.Error($"[In-Process Update] 최상위 업데이트 확인 실패: {ex.Message}");
+                // _logger.Error($"[In-Process Update] 최상위 업데이트 확인 실패: {ex.Message}");
                 _isUpdateInProgress = false;
                 await Task.Delay(5000);
                 lock (_timerLock)
@@ -3138,7 +3137,7 @@ namespace EvChargerUI.Models
             // 중복 실행 방지
             if (_isUpdateInProgress)
             {
-                _logger.Debug("[In-Process Update] Update already in progress, skipping check.");
+                // _logger.Debug("[In-Process Update] Update already in progress, skipping check.");
                 return;
             }
 
@@ -3180,13 +3179,13 @@ namespace EvChargerUI.Models
                 // 1 & 2단계: update 폴더 및 새 실행 파일 존재 여부 확인
                 if (updateDirExists && newExeExists && originFileExists)
                 {
-                    _logger.Info("[In-Process Update] Pending update found. Checking if charger is idle.");
+                    // _logger.Info("[In-Process Update] Pending update found. Checking if charger is idle.");
 
                     // 모든 채널이 유휴 상태일 때만 업데이트 진행
                     if (isLeftIdle && isRightIdle)
                     {
                         _isUpdateInProgress = true;
-                        _logger.Info("[In-Process Update] Charger is idle. Attempting update now.");
+                        // _logger.Info("[In-Process Update] Charger is idle. Attempting update now.");
 
                         // 파일 작업을 백그라운드 스레드에서 실행
                         await Task.Run(async () =>
@@ -3197,32 +3196,32 @@ namespace EvChargerUI.Models
                                 string backupExePath = Path.Combine(baseDir, "EvChargerUI_.exe");
 
                                 // 3단계: 현재 실행 중인 파일 이름 변경 시도
-                                _logger.Info($"[In-Process Update] Step 3: Renaming running EXE: {currentExePath}");
+                                // _logger.Info($"[In-Process Update] Step 3: Renaming running EXE: {currentExePath}");
                                 File.Move(currentExePath, backupExePath);
-                                _logger.Info("[In-Process Update] Step 3: Rename successful.");
+                                // _logger.Info("[In-Process Update] Step 3: Rename successful.");
 
                                 // UpdateFrontFile 폴더 복사
                                 string frontUpdatePath = Path.Combine(updateDir, "UpdateFrontFile");
                                 if (Directory.Exists(frontUpdatePath))
                                 {
-                                    _logger.Info("[In-Process Update] Found UpdateFrontFile folder. Copying contents.");
+                                    // _logger.Info("[In-Process Update] Found UpdateFrontFile folder. Copying contents.");
                                     CopyDirectory(frontUpdatePath, baseDir, true);
-                                    _logger.Info("[In-Process Update] Finished copying UpdateFrontFile contents.");
+                                    // _logger.Info("[In-Process Update] Finished copying UpdateFrontFile contents.");
                                 }
 
                                 // 4단계: 새 파일 복사
-                                _logger.Info($"[In-Process Update] Step 4: Copying new EXE from {newExePath}");
+                                // _logger.Info($"[In-Process Update] Step 4: Copying new EXE from {newExePath}");
                                 File.Copy(newExePath, currentExePath, true);
-                                _logger.Info("[In-Process Update] Step 4: Copy successful.");
+                                // _logger.Info("[In-Process Update] Step 4: Copy successful.");
 
                                 // 5단계: update 폴더 및 파일 삭제
-                                _logger.Info("[In-Process Update] Step 5: Cleaning up update files.");
+                                // _logger.Info("[In-Process Update] Step 5: Cleaning up update files.");
                                 Directory.Delete(updateDir, true);
 
                                 // 6단계: UI 스레드에서 프로그램 종료
                                 await Application.Current.Dispatcher.InvokeAsync(() =>
                                 {
-                                    _logger.Info("[In-Process Update] Update appears successful. Shutting down.");
+                                    // _logger.Info("[In-Process Update] Update appears successful. Shutting down.");
                                     Application.Current.Shutdown();
                                 });
                                 AppSettingsManager.EvCommSettings.LastUiUpdateDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -3230,7 +3229,7 @@ namespace EvChargerUI.Models
                             }
                             catch (Exception ex)
                             {
-                                _logger.Error($"[In-Process Update] File operation failed: {ex.Message}");
+                                // _logger.Error($"[In-Process Update] File operation failed: {ex.Message}");
                                 _isUpdateInProgress = false;
                                 // UI 스레드에서 타이머 재시작
                                 Application.Current.Dispatcher.Invoke(() => _updateCheckTimer.Start());
@@ -3239,7 +3238,7 @@ namespace EvChargerUI.Models
                     }
                     else
                     {
-                        _logger.Info("[In-Process Update] Charger is not idle. Will check again on next tick.");
+                        // _logger.Info("[In-Process Update] Charger is not idle. Will check again on next tick.");
                         _updateCheckTimer.Start(); // 충전기가 바쁘므로 타이머를 재시작
                     }
                 }
@@ -3259,24 +3258,24 @@ namespace EvChargerUI.Models
                                 string frontUpdatePath = Path.Combine(updateDir, "UpdateFrontFile");
                                 if (Directory.Exists(frontUpdatePath))
                                 {
-                                    _logger.Info("[else if step In-Process Update] Found UpdateFrontFile folder. Copying contents.");
+                                    // _logger.Info("[else if step In-Process Update] Found UpdateFrontFile folder. Copying contents.");
                                     CopyDirectory(frontUpdatePath, baseDir, true);
-                                    _logger.Info("[else if step In-Process Update] Finished copying UpdateFrontFile contents.");
+                                    // _logger.Info("[else if step In-Process Update] Finished copying UpdateFrontFile contents.");
                                 }
 
                                 // 4단계: 새 파일 복사
-                                _logger.Info($"[else if step In-Process Update] Step 4: Copying new EXE from {newExePath}");
+                                // _logger.Info($"[else if step In-Process Update] Step 4: Copying new EXE from {newExePath}");
                                 File.Copy(newExePath, currentExePath, true);
-                                _logger.Info("[else if step In-Process Update] Step 4: Copy successful.");
+                                // _logger.Info("[else if step In-Process Update] Step 4: Copy successful.");
 
                                 // 5단계: update 폴더 및 파일 삭제
-                                _logger.Info("[else if step In-Process Update] Step 5: Cleaning up update files.");
+                                // _logger.Info("[else if step In-Process Update] Step 5: Cleaning up update files.");
                                 Directory.Delete(updateDir, true);
 
                                 // 6단계: UI 스레드에서 프로그램 종료
                                 await Application.Current.Dispatcher.InvokeAsync(() =>
                                 {
-                                    _logger.Info("[else if step In-Process Update] Update appears successful. Shutting down.");
+                                    // _logger.Info("[else if step In-Process Update] Update appears successful. Shutting down.");
                                     Application.Current.Shutdown();
                                 });
                                 AppSettingsManager.EvCommSettings.LastUiUpdateDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -3284,7 +3283,7 @@ namespace EvChargerUI.Models
                             }
                             catch (Exception ex)
                             {
-                                _logger.Error($"[In-Process Update] File operation failed: {ex.Message}");
+                                // _logger.Error($"[In-Process Update] File operation failed: {ex.Message}");
                                 _isUpdateInProgress = false;
                                 Application.Current.Dispatcher.Invoke(() => _updateCheckTimer.Start());
                             }
@@ -3300,7 +3299,7 @@ namespace EvChargerUI.Models
             catch (Exception ex)
             {
                 // 예상대로, 실행 중인 파일은 잠겨 있으므로 이 블록이 실행될 가능성이 매우 높습니다.
-                _logger.Error($"[In-Process Update] FAILED. As predicted, the OS likely prevents modifying a running application. This is a fundamental limitation. Error: {ex.Message}");
+                // _logger.Error($"[In-Process Update] FAILED. As predicted, the OS likely prevents modifying a running application. This is a fundamental limitation. Error: {ex.Message}");
                 _isUpdateInProgress = false;
                 // 반복적인 오류를 막기 위해 일정 시간 후 타이머 재시작
                 await Task.Delay(5000);

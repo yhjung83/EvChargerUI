@@ -107,7 +107,7 @@ namespace EvChargerUI.Services
             }
             catch (Exception ex)
             {
-                _logger?.Warn($"[TechleaderPaymentService] Open exception: {ex.Message}");
+                // // _logger?.Warn($"[TechleaderPaymentService] Open exception: {ex.Message}");
                 _isConnected = false;
                 if (_tl3600 != null)
                 {
@@ -243,7 +243,7 @@ namespace EvChargerUI.Services
         {
             try
             {
-                _logger?.Debug("[TechleaderPaymentService] CancelCardReading - Sending TermReadyReq (CMD 'E') to cancel card waiting.");
+                // _logger?.Debug("[TechleaderPaymentService] CancelCardReading - Sending TermReadyReq (CMD 'E') to cancel card waiting.");
 
                 // 1. 대기 중인 요청 TaskCompletionSource를 null로 완료시켜 PayCost/CancelPay/ReadRfCard 대기 해제
                 var hasPending = false;
@@ -273,7 +273,7 @@ namespace EvChargerUI.Services
                 }
 
                 if (hasPending)
-                    _logger?.Debug("[TechleaderPaymentService] CancelCardReading - Pending tasks cancelled.");
+                    // _logger?.Debug("[TechleaderPaymentService] CancelCardReading - Pending tasks cancelled.");
 
                 // 2. 단말기에 Ready 명령(CMD 'E', 0x45) 전송하여 카드 대기 상태 중단
                 //    결제 승인 완료 전 취소이므로 Reset이 아닌 Ready 명령 사용
@@ -296,12 +296,12 @@ namespace EvChargerUI.Services
                     _tl3600.SetState(TL3600.State.Ready);
                 }
 
-                _logger?.Debug("[TechleaderPaymentService] CancelCardReading - Complete. Terminal returned to Ready state.");
+                // _logger?.Debug("[TechleaderPaymentService] CancelCardReading - Complete. Terminal returned to Ready state.");
                 return true;
             }
             catch (Exception ex)
             {
-                _logger?.Warn($"[TechleaderPaymentService] CancelCardReading - Exception: {ex.Message}");
+                // // _logger?.Warn($"[TechleaderPaymentService] CancelCardReading - Exception: {ex.Message}");
                 return false;
             }
         }
@@ -403,7 +403,7 @@ namespace EvChargerUI.Services
                             }
                             break;
                         default:
-                            _logger?.Warn("[TechleaderPaymentService] Error response received without active request context.");
+                            // // _logger?.Warn("[TechleaderPaymentService] Error response received without active request context.");
                             break;
                     }
                     break;
@@ -448,7 +448,7 @@ namespace EvChargerUI.Services
                         return;
                     }
                     // 헬스체크 컨텍스트가 없으면(타임아웃 후 지연 응답 포함) 일반 요청으로 라우팅하지 않음
-                    _logger?.Debug("[TechleaderPaymentService] Ignored stale Check response without active health check context.");
+                    // _logger?.Debug("[TechleaderPaymentService] Ignored stale Check response without active health check context.");
                     break;
             }
         }
@@ -533,7 +533,7 @@ namespace EvChargerUI.Services
             {
                 if (IsTransactionRunning())
                 {
-                    _logger?.Debug("[TechleaderPaymentService] HealthCheck skipped: transaction is running.");
+                    // _logger?.Debug("[TechleaderPaymentService] HealthCheck skipped: transaction is running.");
                     return;
                 }
 
@@ -561,7 +561,7 @@ namespace EvChargerUI.Services
                             _consecutiveHealthCheckFailures++;
                             shouldReconnect = _consecutiveHealthCheckFailures >= HealthCheckFailureThreshold;
                             sw.Stop();
-                            _logger?.Warn($"[TechleaderPaymentService] HealthCheck TermCheck 응답 경과: {sw.ElapsedMilliseconds}ms (결과: 타임아웃, connected=false, failures={_consecutiveHealthCheckFailures})");
+                            // _logger?.Warn($"[TechleaderPaymentService] HealthCheck TermCheck 응답 경과: {sw.ElapsedMilliseconds}ms (결과: 타임아웃, connected=false, failures={_consecutiveHealthCheckFailures})");
                             lock (_healthCheckLock)
                             {
                                 _healthCheckTaskCompletionSource = null;
@@ -580,13 +580,13 @@ namespace EvChargerUI.Services
                                     _consecutiveHealthCheckFailures++;
 
                                 shouldReconnect = !_isConnected && _consecutiveHealthCheckFailures >= HealthCheckFailureThreshold;
-                                _logger?.Info($"[TechleaderPaymentService] HealthCheck TermCheck 응답 경과: {sw.ElapsedMilliseconds}ms (결과: 응답수신, connected={_isConnected}, failures={_consecutiveHealthCheckFailures})");
+                                // _logger?.Info($"[TechleaderPaymentService] HealthCheck TermCheck 응답 경과: {sw.ElapsedMilliseconds}ms (결과: 응답수신, connected={_isConnected}, failures={_consecutiveHealthCheckFailures})");
                                 // ResponseCallback에서 이미 _isConnected를 업데이트했으므로 여기서는 확인만
                             }
                             catch
                             {
                                 sw.Stop();
-                                _logger?.Warn($"[TechleaderPaymentService] HealthCheck TermCheck 응답 경과: {sw.ElapsedMilliseconds}ms (결과: 응답 처리 예외, connected={_isConnected})");
+                                // _logger?.Warn($"[TechleaderPaymentService] HealthCheck TermCheck 응답 경과: {sw.ElapsedMilliseconds}ms (결과: 응답 처리 예외, connected={_isConnected})");
                                 _isConnected = false;
                                 _consecutiveHealthCheckFailures++;
                                 shouldReconnect = _consecutiveHealthCheckFailures >= HealthCheckFailureThreshold;
@@ -602,7 +602,7 @@ namespace EvChargerUI.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger?.Warn($"[TechleaderPaymentService] HealthCheck TermCheck 예외: {ex.Message}");
+                        // _logger?.Warn($"[TechleaderPaymentService] HealthCheck TermCheck 예외: {ex.Message}");
                         _isConnected = false;
                         _consecutiveHealthCheckFailures++;
                         shouldReconnect = _consecutiveHealthCheckFailures >= HealthCheckFailureThreshold;
@@ -617,7 +617,7 @@ namespace EvChargerUI.Services
                     _isConnected = false;
                     _consecutiveHealthCheckFailures++;
                     shouldReconnect = _consecutiveHealthCheckFailures >= HealthCheckFailureThreshold;
-                    _logger?.Warn($"[TechleaderPaymentService] HealthCheck TermCheck 응답 경과: N/A (TL3600 미생성, 단말기 미오픈, failures={_consecutiveHealthCheckFailures})");
+                    // _logger?.Warn($"[TechleaderPaymentService] HealthCheck TermCheck 응답 경과: N/A (TL3600 미생성, 단말기 미오픈, failures={_consecutiveHealthCheckFailures})");
                 }
             }
             catch
@@ -632,7 +632,7 @@ namespace EvChargerUI.Services
                 {
                     if (shouldReconnect)
                     {
-                        _logger?.Warn($"[TechleaderPaymentService] HealthCheck reconnect triggered after {_consecutiveHealthCheckFailures} failures.");
+                        // _logger?.Warn($"[TechleaderPaymentService] HealthCheck reconnect triggered after {_consecutiveHealthCheckFailures} failures.");
                         TryReconnectSerialPort();
                     }
                 }
@@ -654,14 +654,21 @@ namespace EvChargerUI.Services
                 {
                     if (IsTransactionRunning())
                     {
-                        _logger?.Warn("[TechleaderPaymentService] Reconnect deferred: transaction is running.");
+                        // _logger?.Warn("[TechleaderPaymentService] Reconnect deferred: transaction is running.");
                         return;
                     }
 
-                    _logger?.Info("[TechleaderPaymentService] COM reconnect: closing port...");
+                    // _logger?.Info("[TechleaderPaymentService] COM reconnect: closing port...");
                     if (_tl3600 != null)
                     {
-                        try { _tl3600.Close(); } catch (Exception ex) { _logger?.Warn($"[TechleaderPaymentService] Close during reconnect: {ex.Message}"); }
+                        try 
+                        { 
+                            _tl3600.Close(); 
+                        } 
+                        catch (Exception ex) 
+                        { 
+                            // _logger?.Warn($"[TechleaderPaymentService] Close during reconnect: {ex.Message}"); 
+                        }
                         _tl3600 = null;
                     }
 
@@ -677,7 +684,7 @@ namespace EvChargerUI.Services
                         _tl3600 = null;
                     }
 
-                    _logger?.Info($"[TechleaderPaymentService] COM reconnect Open result: {portOpen} (단말 정상은 TermCheck 성공 후 IsConnected=true)");
+                    // _logger?.Info($"[TechleaderPaymentService] COM reconnect Open result: {portOpen} (단말 정상은 TermCheck 성공 후 IsConnected=true)");
 
                     if (portOpen)
                     {
@@ -695,7 +702,7 @@ namespace EvChargerUI.Services
                 {
                     _isConnected = false;
                     _tl3600 = null;
-                    _logger?.Warn($"[TechleaderPaymentService] COM reconnect exception: {ex.Message}");
+                    // _logger?.Warn($"[TechleaderPaymentService] COM reconnect exception: {ex.Message}");
                 }
             }
         }
