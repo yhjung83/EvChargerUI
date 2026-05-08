@@ -1,0 +1,55 @@
+<UserControl x:Class="EvChargerUI.Views.DualChannel.WaitingOtherSideView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             xmlns:gif="http://wpfanimatedgif.codeplex.com"
+             mc:Ignorable="d" 
+             d:DesignHeight="360" d:DesignWidth="348">
+    <Grid Background="Transparent">
+        <Border Background="Transparent" CornerRadius="6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26*"/>
+                    <ColumnDefinition Width="296*"/>
+                    <ColumnDefinition Width="26*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30*"/>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="13*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="11*"/>
+                    <RowDefinition Height="30*"/>
+                </Grid.RowDefinitions>
+                <!-- 로딩 애니메이션 -->
+                <Grid Grid.Row="1" Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Image x:Name="WaitingImage" Grid.Column="1" Width="120" Height="120" gif:ImageBehavior.AnimatedSource="/Images/loading.gif"/>
+                </Grid>
+                
+                <!-- "반대편 선택 중입니다." 메시지 -->
+                <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center">
+                    <controls:LetterSpacingTextBlock Style="{StaticResource ChargerViewTitleStyle}" Foreground="White" FontSize="18">
+                        반대편 선택 중입니다.
+                    </controls:LetterSpacingTextBlock>
+                </Viewbox>
+                
+                <!-- "잠시만 기다려 주세요." 메시지 -->
+                <Viewbox Grid.Row="5" Grid.Column="1" HorizontalAlignment="Center">
+                    <controls:LetterSpacingTextBlock Style="{StaticResource ChargerViewTitleStyle}" Foreground="#CCCCCC" FontSize="14">
+                        잠시만 기다려 주세요.
+                    </controls:LetterSpacingTextBlock>
+                </Viewbox>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

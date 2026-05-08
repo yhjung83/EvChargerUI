@@ -1,0 +1,164 @@
+﻿<UserControl x:Class="EvChargerUI.Views.DualChannel.PaymentMethodSelectView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="360" d:DesignWidth="348">
+    <Grid>
+        <Border Background="#FFFFFF"  CornerRadius="6">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="26*" />
+                    <RowDefinition Height="31*"/>
+                    <RowDefinition Height="26*"/>
+                    <RowDefinition Height="251*"/>
+                    <RowDefinition Height="26*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26*"/>
+                    <ColumnDefinition Width="296*"/>
+                    <ColumnDefinition Width="26*"/>
+                </Grid.ColumnDefinitions>
+                <Viewbox Grid.Row="1" Grid.Column="1">
+                    <controls:LetterSpacingTextBlock Style="{StaticResource ChargerViewTitleStyle}" Text="결제방식을 선택해주세요."/>
+                </Viewbox>
+                <Grid Column="1" Row="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="121*"/>
+                        <RowDefinition Height="9*"/>
+                        <RowDefinition Height="121*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="144*"/>
+                        <ColumnDefinition Width="8*"/>
+                        <ColumnDefinition Width="144*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Row="0" Grid.Column="0"  Command="{Binding SelectRFCardCommand}" Background="Transparent" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="#F4FAFC"  CornerRadius="6">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="31*"/>
+                                            <RowDefinition Height="32*"/>
+                                            <RowDefinition Height="8*"/>
+                                            <RowDefinition Height="20*"/>
+                                            <RowDefinition Height="30*"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="56*"/>
+                                                <ColumnDefinition Width="32*"/>
+                                                <ColumnDefinition Width="56*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Image Grid.Column="1" Source="/Images/img_select_membership.png"/>
+                                        </Grid>
+                                        <Viewbox Grid.Row="3">
+                                            <controls:LetterSpacingTextBlock Style="{StaticResource PaymentButtonContentStyle}"  Text="회원카드"/>
+                                        </Viewbox>
+     
+                                    </Grid>
+
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button Grid.Row="0" Grid.Column="2"  Command="{Binding SelectICCardCommand}" Background="Transparent" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="#F4FAFC"  CornerRadius="6">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="31*"/>
+                                            <RowDefinition Height="32*"/>
+                                            <RowDefinition Height="8*"/>
+                                            <RowDefinition Height="20*"/>
+                                            <RowDefinition Height="30*"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="56*"/>
+                                                <ColumnDefinition Width="32*"/>
+                                                <ColumnDefinition Width="56*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Image Grid.Column="1" Source="/Images/img_select_credit.png"/>
+                                        </Grid>
+                                        <Viewbox Grid.Row="3">
+                                            <controls:LetterSpacingTextBlock Style="{StaticResource PaymentButtonContentStyle}"  Text="신용(IC)카드"/>
+                                        </Viewbox>
+
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="0"  Command="{Binding SelectQRAuthCommand}" Background="Transparent" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="#F4FAFC"  CornerRadius="6">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="31*"/>
+                                            <RowDefinition Height="32*"/>
+                                            <RowDefinition Height="8*"/>
+                                            <RowDefinition Height="20*"/>
+                                            <RowDefinition Height="30*"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="56*"/>
+                                                <ColumnDefinition Width="32*"/>
+                                                <ColumnDefinition Width="56*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Image Grid.Column="1" Source="/Images/img_select_qr.png"/>
+                                        </Grid>
+                                        <Viewbox Grid.Row="3">
+                                            <controls:LetterSpacingTextBlock Style="{StaticResource PaymentButtonContentStyle}"  Text="간편결제(QR)"/>
+                                        </Viewbox>
+
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="2"  Command="{Binding SelectSamsungpayCommand}" Background="Transparent" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="#F4FAFC"  CornerRadius="6">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="31*"/>
+                                            <RowDefinition Height="32*"/>
+                                            <RowDefinition Height="8*"/>
+                                            <RowDefinition Height="20*"/>
+                                            <RowDefinition Height="30*"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="56*"/>
+                                                <ColumnDefinition Width="32*"/>
+                                                <ColumnDefinition Width="56*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Image Grid.Column="1" Source="/Images/img_select_samsung.png"/>
+                                        </Grid>
+                                        <Viewbox Grid.Row="3">
+                                            <controls:LetterSpacingTextBlock Style="{StaticResource PaymentButtonContentStyle}"  Text="삼성페이"/>
+                                        </Viewbox>
+
+                                    </Grid>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+
+                </Grid>
+            </Grid>
+
+
+        </Border>
+    </Grid>
+</UserControl>

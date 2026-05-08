@@ -1,0 +1,87 @@
+<UserControl x:Class="EvChargerUI.Views.InitView.NormalView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views.InitView"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="408" d:DesignWidth="720">
+    <Grid Background="Transparent" PreviewMouseLeftButtonUp="OnRootTapped" PreviewTouchUp="OnRootTouched">
+        <Border Grid.Column="0" BorderThickness="0" CornerRadius="6" ClipToBounds="True" Background="{StaticResource BgImageBrush}"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="34*"/>
+                <RowDefinition Height="374*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="58*"/>
+                <ColumnDefinition Width="662*"/>
+            </Grid.ColumnDefinitions>
+            <Image Grid.Row="1" Grid.Column="1" Source="/Images/img_charger.png" Stretch="Uniform" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+        </Grid>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="272*"/>
+                <ColumnDefinition Width="11*"/>
+                <ColumnDefinition Width="400*"/>
+                <ColumnDefinition Width="11*"/>
+                <ColumnDefinition Width="26*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50*"/>
+                <RowDefinition Height="34*"/>
+                <RowDefinition Height="12*"/>
+                <RowDefinition Height="210*"/>
+                <RowDefinition Height="26*"/>
+                <RowDefinition Height="50*"/>
+                <RowDefinition Height="26*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="1" Grid.Column="2">
+                <Viewbox HorizontalAlignment="Left">
+                    <controls:LetterSpacingTextBlock Text="충전기 사용 시 주의해 주세요!" Style="{StaticResource NoticeTitleStyle}"/>
+                </Viewbox>
+            </Grid>
+            <Grid Grid.Row="3" Grid.Column="2">
+                <Viewbox HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <controls:LetterSpacingTextBlock  Style="{StaticResource NoticeContentStyle}" >
+                        커넥터가 물기가 있는 바닥에 떨어져 있거나 파손 또는
+                        <LineBreak/>
+                        손상된 경우 사용하지 말고 콜센터로 알려 주시기 바랍니다.
+                        <LineBreak/> 
+                        <LineBreak/> 
+                        충전을 종료한 후 커넥터를 보관함에 반드시 거치해 주세요.
+                        <LineBreak/> 
+                        <LineBreak/> 
+                        기타 문의사항은 콜센터(1661-9408) 또는
+                        <LineBreak/>
+                        www.ev.or.kr로 문의 주시면 자세히 안내드리겠습니다.
+                    </controls:LetterSpacingTextBlock>
+                </Viewbox>
+                
+
+            </Grid>
+            <Button x:Name="StartButton" Grid.Row="5"  Grid.Column="1" Grid.ColumnSpan="3"  Command="{Binding StartCommand}"   Background="Transparent" BorderThickness="0">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button" >
+                        <Grid>
+                            <Border Background="#1BA1C8" BorderThickness="0" CornerRadius="6" />
+                            <Grid >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="13*"></RowDefinition>
+                                    <RowDefinition Height="25*"></RowDefinition>
+                                    <RowDefinition Height="12*"></RowDefinition>
+                                </Grid.RowDefinitions>
+
+                                <Viewbox Grid.Row="1" HorizontalAlignment="Center">
+                                    <controls:LetterSpacingTextBlock Text="화면 탭하고 시작하기" Style="{StaticResource ButtonTextWhiteStyle}" />
+                                </Viewbox>
+                            </Grid>
+                        </Grid>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+        </Grid>
+    </Grid>
+</UserControl>

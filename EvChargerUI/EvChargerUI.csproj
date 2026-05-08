@@ -1,0 +1,902 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7B9655EB-DE6E-4E0D-BEDE-0B38796C8D17}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>EvChargerUI</RootNamespace>
+    <AssemblyName>EvChargerUI</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <PublishUrl>게시\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.SQLite, Version=1.0.118.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="INIFileParser, Version=2.5.2.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
+      <HintPath>..\packages\ini-parser.2.5.2\lib\net20\INIFileParser.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xaml.Behaviors, Version=1.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Xaml.Behaviors.Wpf.1.1.39\lib\net45\Microsoft.Xaml.Behaviors.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="QRCoder, Version=1.6.0.0, Culture=neutral, PublicKeyToken=c4ed5b9ae8358a28, processorArchitecture=MSIL">
+      <HintPath>..\packages\QRCoder.1.6.0\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="Utils, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\libs\Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WpfAnimatedGif, Version=2.0.0.0, Culture=neutral, PublicKeyToken=9e7cd3b544a090dc, processorArchitecture=MSIL">
+      <HintPath>..\packages\WpfAnimatedGif.2.0.2\lib\net40\WpfAnimatedGif.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="Commons\Controls\LetterSpacingTextBlock .cs" />
+    <Compile Include="Commons\Controls\WatermarkComboBox.cs" />
+    <Compile Include="Commons\Controls\WatermarkTextBox.cs" />
+    <Compile Include="Commons\Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Commons\Converters\ChargeSequenceToArrowImageConverter.cs" />
+    <Compile Include="Commons\Converters\EnumEqualsConverter.cs" />
+    <Compile Include="Commons\Converters\EnumToBoolConverter.cs" />
+    <Compile Include="Commons\Converters\EnumToVisibilityConverter.cs" />
+    <Compile Include="Commons\Converters\HalfHeightToCornerRadiusConverter .cs" />
+    <Compile Include="Commons\Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="Commons\Converters\ProgressToHeightConverter.cs" />
+    <Compile Include="Commons\Converters\StringNotEmptyConverter.cs" />
+    <Compile Include="Commons\Converters\StringNullOrEmptyToVisibilityConverter.cs" />
+    <Compile Include="Commons\Enum\PaymentMethod.cs" />
+    <Compile Include="Commons\Enum\ChargeSequence.cs" />
+    <Compile Include="Commons\Enum\PopupSizeType.cs" />
+    <Compile Include="Commons\Settings\AppSettingManager.cs" />
+    <Compile Include="Commons\Settings\ChargerTimerSettings.cs" />
+    <Compile Include="Commons\Settings\ChargerOperationSettings.cs" />
+    <Compile Include="Commons\Settings\ChargerSettings.cs" />
+    <Compile Include="Commons\Settings\ChargingPriceSettings.cs" />
+    <Compile Include="Commons\Settings\DisplayBrightnessSettings.cs" />
+    <Compile Include="Commons\Settings\EvCommSettings.cs" />
+    <Compile Include="Commons\Settings\SoundVolumeSettings.cs" />
+    <Compile Include="Commons\Util\FileLogger.cs" />
+    <Compile Include="Commons\Util\DebugTraceListener.cs" />
+    <Compile Include="Commons\Util\MoneyUtil.cs" />
+    <Compile Include="Commons\Util\ChargingAmountUtil.cs" />
+    <Compile Include="Domains\ChaeviModelItem.cs" />
+    <Compile Include="Domains\ManufacturerCode.cs" />
+    <Compile Include="Domains\ConnectorTypeItem.cs" />
+    <Compile Include="Domains\ChargingInfo.cs" />
+    <Compile Include="Domains\PaymentDeviceStatus.cs" />
+    <Compile Include="Domains\PaymentInfo .cs" />
+    <Compile Include="Models\Charger.cs" />
+    <Compile Include="Models\ChargerChannel.cs" />
+    <Compile Include="Models\ChargingSessionState.cs" />
+    <Compile Include="Services\Database\PriceChangeLogRepository.cs" />
+    <Compile Include="Services\Database\PriceScheduleRepository.cs" />
+    <Compile Include="Services\DspControl\ChaeviDspControlService.cs" />
+    <Compile Include="Services\DspControl\Chaevi\DspControl.cs" />
+    <Compile Include="Services\DspControl\Chaevi\DspModbus.cs" />
+    <Compile Include="Services\DspControl\Chaevi\RxData.cs" />
+    <Compile Include="Services\DspControl\Chaevi\TxData.cs" />
+    <Compile Include="Services\DspControl\Evsis\DspControl.cs" />
+    <Compile Include="Services\DspControl\EvsisDspControlService.cs" />
+    <Compile Include="Services\DspControl\Klinelex\DspControl.cs" />
+    <Compile Include="Services\DspControl\Klinelex\DspModbus.cs" />
+    <Compile Include="Services\DspControl\KlinelexDspControlService.cs" />
+    <Compile Include="Services\DspControl\Klinelex\RxData.cs" />
+    <Compile Include="Services\DspControl\Klinelex\TxData.cs" />
+    <Compile Include="Services\DspControl\Signet\DspControl.cs" />
+    <Compile Include="Services\DspControl\Signet\DspModbus.cs" />
+    <Compile Include="Services\DspControl\Signet\RxData.cs" />
+    <Compile Include="Services\DspControl\SignetDspControlService.cs" />
+    <Compile Include="Services\DspControl\Signet\TxData.cs" />
+    <Compile Include="Services\ChaeviModelMappingService.cs" />
+    <Compile Include="Services\Database\OfflineTxRepository.cs" />
+    <Compile Include="Services\Database\SqliteService.cs" />
+    <Compile Include="Services\EvComm\AlarmHistory.cs" />
+    <Compile Include="Services\EvComm\ChargingSession.cs" />
+    <Compile Include="Services\EvComm\CheckCurrentUnitCost.cs" />
+    <Compile Include="Services\EvComm\CheckUpdate.cs" />
+    <Compile Include="Services\EvComm\DataGetEventHandler.cs" />
+    <Compile Include="Services\EvComm\EvCommForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Services\EvComm\HttpAsyncServer.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\ChargingHistory.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\DataParser.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\DPaymentInfo.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\DPaymentInfoData.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonAlarmHistory.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonAuthResv.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonCancelResv.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonChargers.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonChargingEnd.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonChargingInfo.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonChargingStart.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonCheckCurrentUnitCost.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonCheckUpdate.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonDumpCmd.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonInsertResv.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonParser.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonRemoteDone.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonResvCnt.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonResvStation.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonRTimeChargerStatus.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonSendSMS.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\JSonUser.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\PaymentInfo.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\PaymentInfoData.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\RequestRepeat.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\Transmission.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\TransmissionHistory.cs" />
+    <Compile Include="Services\EvComm\HttpJsonRequest\WebHelper.cs" />
+    <Compile Include="Services\EvComm\RemoteDone.cs" />
+    <Compile Include="Services\EvComm\ReserveSession.cs" />
+    <Compile Include="Services\EvComm\ResponseData.cs" />
+    <Compile Include="Services\EvComm\ResponseServer.cs" />
+    <Compile Include="Services\EvComm\RTimeChargerStatus.cs" />
+    <Compile Include="Services\IDaylightService.cs" />
+    <Compile Include="Services\DaylightService.cs" />
+    <Compile Include="Services\ISoundService.cs" />
+    <Compile Include="Services\ISystemSettingsService.cs" />
+    <Compile Include="Services\SoundService.cs" />
+    <Compile Include="Services\SystemSettingsService.cs" />
+    <Compile Include="Services\LogManager.cs" />
+    <Compile Include="Services\FaultHandling\FaultHandlingManager.cs" />
+    <Compile Include="Services\DspControl\IDspControlService.cs" />
+    <Compile Include="Services\DspControl\DspTimeoutException.cs" />
+    <Compile Include="Services\DspControl\Evsis\DspModbus.cs" />
+    <Compile Include="Services\DspControl\Evsis\RxData.cs" />
+    <Compile Include="Services\DspControl\Evsis\TxData.cs" />
+    <Compile Include="Services\IEvCommService.cs" />
+    <Compile Include="Services\EvCommService.cs" />
+    <Compile Include="Services\IEvCommToChargerDelegate.cs" />
+    <Compile Include="Services\IPaymentService.cs" />
+    <Compile Include="Services\NicePaymentService.cs" />
+    <Compile Include="Services\TechleaderPaymentService.cs" />
+    <Compile Include="Services\TL3600.cs" />
+    <Compile Include="Services\TL3600Pkt.cs" />
+    <Compile Include="ViewModels\AdminViewModel.cs" />
+    <Compile Include="ViewModels\ChargeInputPopupViewModel.cs" />
+    <Compile Include="ViewModels\ChargerViewModel.cs" />
+    <Compile Include="ViewModels\Commons\BaseViewModel.cs" />
+    <Compile Include="ViewModels\Commons\RelayCommand.cs" />
+    <Compile Include="ViewModels\InputReservationNumberPopupViewModel.cs" />
+    <Compile Include="ViewModels\InputPasswordPopupViewModel.cs" />
+    <Compile Include="ViewModels\InputPhoneNumberPopupViewModel.cs" />
+    <Compile Include="ViewModels\LeftChargerViewModel.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\PriceChangeLogViewModel.cs" />
+    <Compile Include="ViewModels\PriceScheduleViewModel.cs" />
+    <Compile Include="ViewModels\RightChargerViewModel.cs" />
+    <Compile Include="ViewModels\SingleChargerViewModel.cs" />
+    <Compile Include="ViewModels\LogViewModel.cs" />
+    <Compile Include="Views\AdminSettingView.xaml.cs">
+      <DependentUpon>AdminSettingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AdminMainView.xaml.cs">
+      <DependentUpon>AdminMainView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BottomView.xaml.cs">
+      <DependentUpon>BottomView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\CalcChargeAmountView.xaml.cs">
+      <DependentUpon>CalcChargeAmountView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\ChargingReceiptView.xaml.cs">
+      <DependentUpon>ChargingReceiptView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InitView\NormalView.xaml.cs">
+      <DependentUpon>NormalView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\AuthFailPopupView.xaml.cs">
+      <DependentUpon>AuthFailPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\HelpAC3PopupView.xaml.cs">
+      <DependentUpon>HelpAC3PopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\HelpDCChademoPopupView.xaml.cs">
+      <DependentUpon>HelpDCChademoPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\HelpChargingFinishedNotificationPopupView.xaml.cs">
+      <DependentUpon>HelpChargingFinishedNotificationPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\HelpDCComboPopupView.xaml.cs">
+      <DependentUpon>HelpDCComboPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\HelpChargingSpeedPopupView.xaml.cs">
+      <DependentUpon>HelpChargingSpeedPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\HelpChargingCapacityPopupView.xaml.cs">
+      <DependentUpon>HelpChargingCapacityPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\EVSE_CheckView.xaml.cs">
+      <DependentUpon>EVSE_CheckView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ErrorStatusPopupView.xaml.cs">
+      <DependentUpon>ErrorStatusPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\SearchStationQrCodePopupView.xaml.cs">
+      <DependentUpon>SearchStationQrCodePopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\WrongReservationNoPopupView.xaml.cs">
+      <DependentUpon>WrongReservationNoPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\WrongPasswordPopupView.xaml.cs">
+      <DependentUpon>WrongPasswordPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ReservationDescriptionPopupView.xaml.cs">
+      <DependentUpon>ReservationDescriptionPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\PaymentFailPopupView.xaml.cs">
+      <DependentUpon>PaymentFailPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\PaymentLoadingPopupView.xaml.cs">
+      <DependentUpon>PaymentLoadingPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ConnectorErrorPopupView.xaml.cs">
+      <DependentUpon>ConnectorErrorPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\EmergencyStopPopupView.xaml.cs">
+      <DependentUpon>EmergencyStopPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ReservationCancelPopupView.xaml.cs">
+      <DependentUpon>ReservationCancelPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\AutoReservationCancelPopupView.xaml.cs">
+      <DependentUpon>AutoReservationCancelPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\WaitingChargingStartPopupView.xaml.cs">
+      <DependentUpon>WaitingChargingStartPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ReservationSuccessPopupView.xaml.cs">
+      <DependentUpon>ReservationSuccessPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ReservationFailPopupView.xaml.cs">
+      <DependentUpon>ReservationFailPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\InputReservationNumberPopupView.xaml.cs">
+      <DependentUpon>InputReservationNumberPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\PaymentSuccessPopupView.xaml.cs">
+      <DependentUpon>PaymentSuccessPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\CreditCardReceiptPopupView.xaml.cs">
+      <DependentUpon>CreditCardReceiptPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ChargeInputPopupView.xaml.cs">
+      <DependentUpon>ChargeInputPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\InputPasswordPopupView.xaml.cs">
+      <DependentUpon>InputPasswordPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\InputPhoneNumberPopupView.xaml.cs">
+      <DependentUpon>InputPhoneNumberPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ReportQrCodePopupView.xaml.cs">
+      <DependentUpon>ReportQrCodePopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\QrCodePopupView.xaml.cs">
+      <DependentUpon>QrCodePopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\AuthSuccessPopupView.xaml.cs">
+      <DependentUpon>AuthSuccessPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\WaitingPopupView.xaml.cs">
+      <DependentUpon>WaitingPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\InsertICCardPopupView.xaml.cs">
+      <DependentUpon>InsertICCardPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\TagRFCardPopupView.xaml.cs">
+      <DependentUpon>TagRFCardPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\TagSamsungpayPopupView.xaml.cs">
+      <DependentUpon>TagSamsungpayPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Popup\ChargingEndConfirmPopupView.xaml.cs">
+      <DependentUpon>ChargingEndConfirmPopupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\ReadyToChargingView.xaml.cs">
+      <DependentUpon>ReadyToChargingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\ChaeviMobileConnectorControlView.xaml.cs">
+      <DependentUpon>ChaeviMobileConnectorControlView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AdminWindow.xaml.cs">
+      <DependentUpon>AdminWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DebugWindow.xaml.cs">
+      <DependentUpon>DebugWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PriceChangeLogView\PriceChangeLogView.xaml.cs">
+      <DependentUpon>PriceChangeLogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PriceScheduleView\PriceScheduleView.xaml.cs">
+      <DependentUpon>PriceScheduleView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ReservationWaitingView.xaml.cs">
+      <DependentUpon>ReservationWaitingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ChargerSelectTypeView.xaml.cs">
+      <DependentUpon>ChargerSelectTypeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\TripleChargerSelectTypeView.xaml.cs">
+      <DependentUpon>TripleChargerSelectTypeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ChargerView.xaml.cs">
+      <DependentUpon>ChargerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\CalcChargeAmountView.xaml.cs">
+      <DependentUpon>CalcChargeAmountView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ChargingCompleteView.xaml.cs">
+      <DependentUpon>ChargingCompleteView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ChargingProgressView.xaml.cs">
+      <DependentUpon>ChargingProgressView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ChargingReceiptView.xaml.cs">
+      <DependentUpon>ChargingReceiptView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\PaymentMethodSelectView.xaml.cs">
+      <DependentUpon>PaymentMethodSelectView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LogView\LogView.xaml.cs">
+      <DependentUpon>LogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ReadyToChargingView.xaml.cs">
+      <DependentUpon>ReadyToChargingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ChaeviReadyToChargeLRView.xaml.cs">
+      <DependentUpon>ChaeviReadyToChargeLRView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SingleChannel\ChaeviReadyToChargeUDLRView.xaml.cs">
+      <DependentUpon>ChaeviReadyToChargeUDLRView.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Views\AdminSettingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\AdminMainView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DualChannel\CalcChargeAmountView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DualChannel\ChargingCompleteView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DualChannel\ChargingProgressView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DualChannel\ChargingReceiptView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DualChannel\PaymentMethodSelectView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DualChannel\ChargerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DualChannel\ChargerSelectTypeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DualChannel\WaitingOtherSideView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InitView\NormalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MainView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DualChannel\ChargingCompleteView.xaml.cs">
+      <DependentUpon>ChargingCompleteView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\ChargingProgressView.xaml.cs">
+      <DependentUpon>ChargingProgressView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\PaymentMethodSelectView.xaml.cs">
+      <DependentUpon>PaymentMethodSelectView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\ChargerView.xaml.cs">
+      <DependentUpon>ChargerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\ChargerSelectTypeView.xaml.cs">
+      <DependentUpon>ChargerSelectTypeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DualChannel\WaitingOtherSideView.xaml.cs">
+      <DependentUpon>WaitingOtherSideView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MainView.xaml.cs">
+      <DependentUpon>MainView.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="Views\BottomView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Popup\AuthFailPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\HelpAC3PopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\HelpDCChademoPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\HelpChargingFinishedNotificationPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\HelpDCComboPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\HelpChargingSpeedPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\HelpChargingCapacityPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\EVSE_CheckView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\ErrorStatusPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\SearchStationQrCodePopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\WrongReservationNoPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\ReservationDescriptionPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\PaymentFailPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\PaymentLoadingPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\ConnectorErrorPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\EmergencyStopPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\ReservationCancelPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\AutoReservationCancelPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\WaitingChargingStartPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\ReservationSuccessPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\ReservationFailPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\WrongPasswordPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\InputReservationNumberPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\PaymentSuccessPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\CreditCardReceiptPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\ChargeInputPopupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Popup\InputPasswordPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\InputPhoneNumberPopupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Popup\ReportQrCodePopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\QrCodePopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\AuthSuccessPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\WaitingPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Popup\InsertICCardPopupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Popup\TagRFCardPopupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Popup\TagSamsungpayPopupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Popup\ChargingEndConfirmPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DualChannel\ReadyToChargingView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DualChannel\ChaeviMobileConnectorControlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AdminWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DebugWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PriceChangeLogView\PriceChangeLogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PriceScheduleView\PriceScheduleView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SingleChannel\ReservationWaitingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\ChargerSelectTypeView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\TripleChargerSelectTypeView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\ChargerView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\CalcChargeAmountView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\ChargingCompleteView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\ChargingProgressView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\ChargingReceiptView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\PaymentMethodSelectView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\ReadyToChargingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\ChaeviReadyToChargeLRView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SingleChannel\ChaeviReadyToChargeUDLRView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\LogView\LogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Services\EvComm\EvCommForm.resx">
+      <DependentUpon>EvCommForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <Resource Include="Fonts\Pretendard-Black.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Pretendard-Bold.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Pretendard-ExtraBold.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Pretendard-ExtraLight.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Pretendard-Light.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Pretendard-Medium.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Pretendard-SemiBold.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Pretendard-Thin.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FrontViewer_4.0\FrontViewer_4.0.csproj">
+      <Project>{e2e3f4e5-e6e7-48e9-a0ea-1b2c3d4e5f6a}</Project>
+      <Name>FrontViewer_4.0</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WinWatchDogApp\WinWatchDogApp.csproj">
+      <Project>{5058ad8d-714f-417a-bbf7-5ed3f7441ba3}</Project>
+      <Name>WinWatchDogApp</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\arrow.png" />
+    <Resource Include="Images\arrow_disable.png" />
+    <Resource Include="Images\btn_charging_complete.png" />
+    <Resource Include="Images\btn_go_first.png" />
+    <Resource Include="Images\btn_home.png" />
+    <Resource Include="Images\btn_phonenumber_cancel.png" />
+    <Resource Include="Images\btn_reserve.png" />
+    <Resource Include="Images\btn_usable_l.png" />
+    <Resource Include="Images\btn_usable_r.png" />
+    <Resource Include="Images\ic_alert.png" />
+    <Resource Include="Images\ic_qr_code.png" />
+    <Resource Include="Images\ic_type_charger_dc.png" />
+    <Resource Include="Images\ic_type_charger_ac3.png" />
+    <Resource Include="Images\ic_type_charger_chademo.png" />
+    <Resource Include="Images\img_connect_charger.png" />
+    <Resource Include="Images\img_error.png" />
+    <Resource Include="Images\img_ready_connector_l.png" />
+    <Resource Include="Images\img_ready_connector_r.png" />
+    <Resource Include="Images\img_select_credit.png" />
+    <Resource Include="Images\img_select_membership.png" />
+    <Resource Include="Images\img_select_qr.png" />
+    <Resource Include="Images\img_select_samsung.png" />
+    <Resource Include="Images\logo_evgov.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\btn_clear.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ic_information.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\loading.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\img_insert_iccard.gif" />
+    <Resource Include="Images\img_tag_rfcard.gif" />
+    <Resource Include="Images\img_tag_samsungpay.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ic_check_circle.png" />
+    <Resource Include="Images\ic_electric_bolt.png" />
+    <Resource Include="Images\ic_schedule.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ic_reboot.png" />
+    <Resource Include="Images\ic_restart.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\btn_usable.png" />
+    <Resource Include="Images\img_ready_connector.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\img_battery.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ic_check_all.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\img_plug_connector.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\btn_reserve_complete_alarm.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\img_emergency.png" />
+    <Resource Include="Images\img_fail_payment.png" />
+    <Resource Include="Images\img_fail_auth.png" />
+    <Resource Include="Images\img_bg.png" />
+    <Resource Include="Images\img_charger.png" />
+    <Resource Include="Images\btn_reserve_complete_alarm_disabled.png" />
+    <Resource Include="Images\ic_type_charger_dc_disabled.png" />
+    <Resource Include="Images\ic_help.png" />
+    <Resource Include="Images\ic_help_white.png" />
+    <Resource Include="Images\ic_help_gray.png" />
+    <Resource Include="Images\ic_info.png" />
+    <Resource Include="Images\btn_home_disabled.png" />
+    <Resource Include="Images\btn_payYN.png" />
+    <Resource Include="Images\btn_test.png" />
+    <Resource Include="Images\img_chaevi_cylinder.png" />
+    <Content Include="libs\NVCAT.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>NVCAT.dll</TargetPath>
+    </Content>
+    <None Include="configs\settings.Debug.ini">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="configs\settings.Release.ini">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Converters\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- Configuration별 설정 파일 복사 -->
+  <Target Name="CopyConfigPerConfiguration" AfterTargets="Build">
+    <!-- Debug -->
+    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(MSBuildProjectDirectory)\configs\settings.Debug.ini" DestinationFiles="$(TargetDir)settings.ini" />
+    <!-- Release -->
+    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="$(MSBuildProjectDirectory)\configs\settings.Release.ini" DestinationFiles="$(TargetDir)settings.ini" />
+  </Target>
+  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+  </Target>
+</Project>

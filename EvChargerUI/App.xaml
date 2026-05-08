@@ -1,0 +1,1128 @@
+﻿<Application x:Class="EvChargerUI.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:EvChargerUI"
+             xmlns:converters="clr-namespace:EvChargerUI.Commons.Converters"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             >
+    <Application.Resources>
+        <ImageBrush x:Key="BgImageBrush" ImageSource="/Images/img_bg.png" Stretch="UniformToFill"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" Inverse="True"/>
+        <converters:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
+        <converters:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
+        <converters:HalfHeightToCornerRadiusConverter x:Key="HalfHeightConverter"/>
+        <converters:ChargeSequenceToArrowImageConverter x:Key="ChargeSequenceToArrowImageConverter"/>
+        <converters:ProgressToHeightConverter x:Key="ProgressToHeightConverter" />
+        <converters:StringNullOrEmptyToVisibilityConverter x:Key="StringNullOrEmptyToVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" Inverse="True"/>
+        <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter"/>
+
+        <Color x:Key="PrimaryTextColor01">#37404C</Color>
+        <Color x:Key="PrimaryTextColor02">#475263</Color>
+        <Color x:Key="SecondaryTextColor01">#64748B</Color>
+
+        <SolidColorBrush x:Key="PrimaryTextBrush01" Color="{StaticResource PrimaryTextColor01}" />
+        <SolidColorBrush x:Key="PrimaryTextBrush02" Color="{StaticResource PrimaryTextColor02}" />
+        <SolidColorBrush x:Key="SecondaryTextBrush01" Color="{StaticResource SecondaryTextColor01}" />
+
+        <FontFamily x:Key="PretendardBoldFont">/EvChargerUI;component/Fonts/#Pretendard Bold</FontFamily>
+        <FontFamily x:Key="PretendardFont">/EvChargerUI;component/Fonts/#Pretendard</FontFamily>
+
+        <Style x:Key="SingleChargerViewTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="TextAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush02}" />
+            <Setter Property="LineHeight" Value="31"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="SingleChargerViewSubTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush01}" />
+            <Setter Property="LineHeight" Value="22"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="SingleChargerViewTitleWhiteStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="TextAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#000000" />
+            <Setter Property="LineHeight" Value="31"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+
+        <Style x:Key="SinglePaymentButtonContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="LineHeight" Value="24" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#37404C"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="SingleChargerViewHighlightTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="TextAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8" />
+            <Setter Property="LineHeight" Value="31"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="SingleChargerViewSubtitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="LineHeight" Value="22"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="SingleChargingCompleteSubtitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263" />
+            <Setter Property="LineHeight" Value="17"/>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+
+        <Style x:Key="CalcChargeAmountSubtitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="17" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#64748B"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+
+        <Style x:Key="SingleChargingCompleteSubjectStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="LineHeight" Value="18" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#97A2B1"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+
+        <Style x:Key="SingleChargingCompleteContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="LineHeight" Value="18" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+
+
+        <Style x:Key="ButtonTextStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="LineHeight" Value="25" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="ButtonTextWhiteStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="LineHeight" Value="25" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#FFFFFF"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+        <Style x:Key="ButtonTextGrayStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="LineHeight" Value="25" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#97A2B1"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="CommonConfirmButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button" >
+                        <Grid>
+                            <Border x:Name="ButtonBorder" Background="#1BA1C8" BorderThickness="0" CornerRadius="6" />
+                            <Grid >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="13*"></RowDefinition>
+                                    <RowDefinition Height="25*"></RowDefinition>
+                                    <RowDefinition Height="12*"></RowDefinition>
+                                </Grid.RowDefinitions>
+
+                                <Viewbox Grid.Row="1" HorizontalAlignment="Center">
+                                    <controls:LetterSpacingTextBlock Text="확인" Style="{StaticResource ButtonTextWhiteStyle}" />
+                                </Viewbox>
+                            </Grid>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#DEE2E7" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CommonCancelButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button" >
+                        <Grid>
+                            <Border Background="#F2F4F6" BorderThickness="0" CornerRadius="6" />
+                            <Grid >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="13*"></RowDefinition>
+                                    <RowDefinition Height="25*"></RowDefinition>
+                                    <RowDefinition Height="12*"></RowDefinition>
+                                </Grid.RowDefinitions>
+
+                                <Viewbox Grid.Row="1" HorizontalAlignment="Center">
+                                    <controls:LetterSpacingTextBlock Text="취소" Style="{StaticResource ButtonTextGrayStyle}" />
+                                </Viewbox>
+                            </Grid>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CancelPopupTextStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="LineHeight" Value="22" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#97A2B1"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+        <Style x:Key="CancelPopupButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="ButtonBorder"
+                            Background="#FFFFFF"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            BorderBrush="#B8BFCA"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130*"/>
+                                    <ColumnDefinition Width="48*"/>
+                                    <ColumnDefinition Width="130*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="14*"/>
+                                    <RowDefinition Height="22*"/>
+                                    <RowDefinition Height="13*"/>
+                                </Grid.RowDefinitions>
+
+                                <Viewbox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center">
+                                    <controls:LetterSpacingTextBlock Text="취소"
+                                                             Style="{StaticResource CancelPopupTextStyle}"/>
+                                </Viewbox>
+                            </Grid>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ConfirmPopupTextStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="LineHeight" Value="22" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#FFFFFF"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="ConfirmPopupButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button" >
+                        <Grid>
+                            <Border Background="#1BA1C8" BorderThickness="0" CornerRadius="6" />
+                            <Grid >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="14*"></RowDefinition>
+                                    <RowDefinition Height="22*"></RowDefinition>
+                                    <RowDefinition Height="13*"></RowDefinition>
+                                </Grid.RowDefinitions>
+
+                                <Viewbox Grid.Row="1" HorizontalAlignment="Center">
+                                    <controls:LetterSpacingTextBlock Text="확인" Style="{StaticResource ConfirmPopupTextStyle}" />
+                                </Viewbox>
+                            </Grid>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ChargerViewTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush02}" />
+            <Setter Property="LineHeight" Value="31"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="NoticeTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="LineHeight" Value="34" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#171616"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+        <Style x:Key="NoticeContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="LineHeight" Value="25" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Top"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+        <Style TargetType="{x:Type controls:WatermarkComboBox}">
+            <Setter Property="Foreground" Value="#37404C"/>
+            <Setter Property="FontFamily" Value="Pretendard"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Background" Value="#F2F4F6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type controls:WatermarkComboBox}">
+                        <Grid>
+                            <!-- 전체 클릭 영역을 ToggleButton으로 -->
+                            <ToggleButton x:Name="ToggleButton"
+                                  Background="{TemplateBinding Background}"
+                                  BorderThickness="0"
+                                  Focusable="False"
+                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                  ClickMode="Press">
+                                <Border x:Name="MainBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="0">
+                                    <Grid>
+                                        <!-- 워터마크 -->
+                                        <TextBlock Text="{Binding Watermark, RelativeSource={RelativeSource TemplatedParent}}"
+                                           Foreground="#B8BFCA"
+                                           Margin="16,0,25,0"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"
+                                           Visibility="{Binding SelectedItem, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource NullToVisibilityConverter}}"/>
+
+                                        <!-- 선택된 항목 -->
+                                        <ContentPresenter Margin="16,0,25,0"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Left"
+                                                  Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                  IsHitTestVisible="False"/>
+
+                                        <!-- 드롭다운 화살표 -->
+                                        <Path Data="M 0 0 L 4 4 L 8 0 Z"
+                                      Fill="#777"
+                                      Width="8" Height="6"
+                                      HorizontalAlignment="Right"
+                                      VerticalAlignment="Center"
+                                      Margin="0,0,8,0"/>
+                                    </Grid>
+                                </Border>
+
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="ToggleBorder"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="0">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ToggleBorder" Property="Background" Value="#E3E8F0"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="ToggleBorder" Property="Background" Value="#D2D8E0"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <!-- 팝업 (드롭다운 목록) -->
+                            <Popup x:Name="PART_Popup"
+                           Placement="Bottom"
+                           IsOpen="{TemplateBinding IsDropDownOpen}"
+                           AllowsTransparency="True"
+                           Focusable="False"
+                           PopupAnimation="Slide">
+                                <Border Background="Transparent"
+                                CornerRadius="0"
+                                MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                Margin="0,4,0,0">
+                                    <Border Background="White"
+                                    CornerRadius="0"
+                                    SnapsToDevicePixels="True"
+                                    Padding="0">
+                                        <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                                              HorizontalScrollBarVisibility="Hidden">
+                                            <ItemsPresenter />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <!-- 드롭다운 항목 스타일 -->
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Height" Value="28"/>
+                        <Setter Property="Foreground" Value="#64748B"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBoxItem">
+                                    <Border x:Name="Bd" Background="#F2F4F6">
+                                        <Grid>
+                                            <!-- 왼쪽 여백 정렬 -->
+                                            <ContentPresenter VerticalAlignment="Center"
+                                                              Margin="16,0"/>
+                                            <Border Height="1"
+                                                    VerticalAlignment="Bottom"
+                                                    Background="#DEE2F7"
+                                                    Margin="0"/>
+                                        </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsHighlighted" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#E9EBEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Hyperlink">
+            <Setter Property="Foreground" Value="#B8BFCA"/>
+            <Setter Property="TextDecorations" Value="Underline"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+
+        <Style x:Key="ChargerTypeStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush01}" />
+            <Setter Property="LineHeight" Value="22"/>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+        <Style x:Key="ChargerTypeDisabledStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#B8BFCA" />
+            <Setter Property="LineHeight" Value="22"/>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+
+        <Style x:Key="BottomTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="14" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#FFFFFF"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+        <Style x:Key="BottomSubtitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="14" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#99FFFFFF"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="BottomContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="LineHeight" Value="18" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#FFFFFF"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+
+        </Style>
+
+        <Style x:Key="BottomSubtitleDarkStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="14" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#99000000"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="BottomContentDarkStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="LineHeight" Value="18" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#0B0B0B"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+
+        </Style>
+
+        <Style x:Key="BottomStationNameStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LineHeight" Value="15.6" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#FFFFFF"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+
+        </Style>
+
+        <Style x:Key="BottomVersionStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="LineHeight" Value="12" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+
+        </Style>
+
+        <Style x:Key="BottomVersionTitleRunStyle" TargetType="Run">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="Foreground" Value="#66FFFFFF"></Setter>
+        </Style>
+        <Style x:Key="BottomVersionContentRunStyle" TargetType="Run">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="Foreground" Value="#FFFFFF"></Setter>
+        </Style>
+
+        <Style x:Key="TopProgressStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="14" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#FFFFFF"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#33FFFFFF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PaymentButtonContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="LineHeight" Value="20" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#37404C"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="PopupTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="LineHeight" Value="28" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+        <Style x:Key="HelpPopupTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="LineHeight" Value="28" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+        <Style x:Key="PopupContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="LineHeight" Value="24" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#64748B"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="ChargingProgressSubjectStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LineHeight" Value="17" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#171616"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+
+        <Style x:Key="ChargingProgressContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LineHeight" Value="17" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#171616"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.33"></Setter>
+        </Style>
+
+        <Style x:Key="ChargingProgressNumberStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="36" />
+            <Setter Property="LineHeight" Value="36" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8"></Setter>
+            <Setter Property="LetterSpacing" Value="0"></Setter>
+        </Style>
+
+        <Style x:Key="ChargingProgressTextStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="14" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+        <Style x:Key="ChargingSpeedTextStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="14" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#171616"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+        <Style x:Key="ChargingProgressAlertStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="LineHeight" Value="13" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#2D7E95"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="ChargerViewHighlightTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8" />
+            <Setter Property="LineHeight" Value="31"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="ChargerViewSubtitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="LineHeight" Value="22"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="ChargingCompleteSubjectStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LineHeight" Value="17" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#97A2B1"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="ChargingCompleteHighlightContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LineHeight" Value="17" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+        <Style x:Key="ChargingCompleteContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LineHeight" Value="17" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+        <Style x:Key="ChargingCompleteBoldContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LineHeight" Value="17" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+        <Style x:Key="ChargingCompleteSmallContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="LineHeight" Value="12" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#97A2B1"></Setter>
+            <Setter Property="LetterSpacing" Value="0"></Setter>
+        </Style>
+
+        <Style x:Key="ImageButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="LargePopupTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="TextAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush02}" />
+            <Setter Property="LineHeight" Value="31"/>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+        <Style x:Key="NumberContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="LineHeight" Value="25" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#37404C"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+        <Style x:Key="ChargeAmountContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="LineHeight" Value="28" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+        <Style x:Key="PhoneNumberStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="32" />
+            <Setter Property="LineHeight" Value="45" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="ReservationNumberStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="32" />
+            <Setter Property="LineHeight" Value="45" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#37404C"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="UnitPriceTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="LineHeight" Value="25" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#64748B"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="UnitPriceContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="LineHeight" Value="25" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#37404C"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="AdminTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="LineHeight" Value="26" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#37404C"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="AdminTitleVersionStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LineHeight" Value="18" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.2"></Setter>
+        </Style>
+
+
+        <Style x:Key="AdminChargerInfoTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="20" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#97A2B1"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.2"></Setter>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <Style x:Key="AdminChargerInfoContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="20" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.2"></Setter>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <Style x:Key="AdminChargerInfoContentBoldStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="20" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.2"></Setter>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <Style x:Key="AdminSettingContentTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="20" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#97A2B1"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.2"></Setter>
+        </Style>
+
+        <Style x:Key="NumberPadButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" Background="#F8F9FA" CornerRadius="6">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="14*"/>
+                                    <RowDefinition Height="25*"/>
+                                    <RowDefinition Height="14*"/>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="1">
+                                    <Viewbox>
+                                        <controls:LetterSpacingTextBlock Style="{StaticResource NumberContentStyle}" 
+                                                                         Text="{TemplateBinding Content}" />
+                                    </Viewbox>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#E9EBEF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ChargeAmountButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" Background="#F8F9FA" CornerRadius="6">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="18*"/>
+                                    <RowDefinition Height="28*"/>
+                                    <RowDefinition Height="18*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20*"/>
+                                    <ColumnDefinition Width="108*"/>
+                                    <ColumnDefinition Width="20*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid Grid.Row="1" Grid.Column="1">
+                                    <Viewbox>
+                                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargeAmountContentStyle}" 
+                                                                         Text="{TemplateBinding Content}" />
+                                    </Viewbox>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#E9EBEF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DirectionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="ButtonBorder"
+                            Background="#000000"
+                            BorderThickness="0"
+                            CornerRadius="6">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#333333"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="controls:WatermarkTextBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="controls:WatermarkTextBox">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost"  Background="{TemplateBinding Background}"/>
+
+                            <TextBlock Text="{TemplateBinding Watermark}"
+                               Foreground="{TemplateBinding WatermarkForeground}"
+                               Margin="12,0,0,0"
+                               VerticalAlignment="Center"
+                               IsHitTestVisible="False">
+                                <TextBlock.RenderTransform>
+                                    <TranslateTransform X="{TemplateBinding LetterSpacing}" />
+                                </TextBlock.RenderTransform>
+
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""/>
+                                                    <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="FontFamily" Value="{StaticResource PretendardFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="#37404C"/>
+            <Setter Property="WatermarkForeground" Value="#B8BFCA"/>
+            <Setter Property="Background" Value="#F2F4F6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="LetterSpacing" Value="-0.2"/>
+            <Setter Property="Padding" Value="12,6,0,6"></Setter>
+        </Style>
+
+        <Style x:Key="ChargeAmountStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="Foreground" Value="#37404C"></Setter>
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Bottom"></Setter>
+            <Setter Property="FontSize" Value="46" />
+            <Setter Property="LineHeight" Value="55" />
+            <Setter Property="LetterSpacing" Value="0"></Setter>
+        </Style>
+
+        <Style x:Key="ChargeAmountUnitStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="Foreground" Value="#37404C"></Setter>
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Bottom"></Setter>
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="LineHeight" Value="22" />
+            <Setter Property="LetterSpacing" Value="-0.3"></Setter>
+        </Style>
+
+        <Style x:Key="SmalPopupTitleStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="LineHeight" Value="28" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#1BA1C8"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+        <Style x:Key="SmalPopupContentStyle" TargetType="controls:LetterSpacingTextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource PretendardBoldFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="LineHeight" Value="28" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="#475263"></Setter>
+            <Setter Property="LetterSpacing" Value="-0.6"></Setter>
+        </Style>
+
+
+
+
+
+
+        <DataTemplate x:Key="AlertPopupTemplate">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="141*"/>
+                    <RowDefinition Height="230*"/>
+                    <RowDefinition Height="141*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="204*"/>
+                    <ColumnDefinition Width="360*"/>
+                    <ColumnDefinition Width="204*"/>
+                </Grid.ColumnDefinitions>
+                <ContentControl Grid.Row="1" Grid.Column="1" Content="{TemplateBinding Content}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SmallPopupTemplate">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="84*"/>
+                    <RowDefinition Height="345*"/>
+                    <RowDefinition Height="83*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="204*"/>
+                    <ColumnDefinition Width="360*"/>
+                    <ColumnDefinition Width="204*"/>
+                </Grid.ColumnDefinitions>
+                <ContentControl Grid.Row="1" Grid.Column="1" Content="{TemplateBinding Content}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="LargePopupTemplate">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="46*"/>
+                    <RowDefinition Height="420*"/>
+                    <RowDefinition Height="46*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30*"/>
+                    <ColumnDefinition Width="708*"/>
+                    <ColumnDefinition Width="30*"/>
+                </Grid.ColumnDefinitions>
+                <ContentControl Grid.Row="1" Grid.Column="1" Content="{TemplateBinding Content}" />
+            </Grid>
+        </DataTemplate>
+
+    </Application.Resources>
+</Application>

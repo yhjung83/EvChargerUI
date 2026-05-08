@@ -1,0 +1,142 @@
+<UserControl x:Class="EvChargerUI.Views.DualChannel.ChaeviMobileConnectorControlView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="360" d:DesignWidth="348">
+    <Grid>
+        <Border Background="#FFFFFF" CornerRadius="6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26*"/>
+                    <ColumnDefinition Width="296*"/>
+                    <ColumnDefinition Width="26*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="26*"/>
+                    <RowDefinition Height="62*"/>
+                    <RowDefinition Height="27*"/>
+                    <RowDefinition Height="212*"/>
+                    <RowDefinition Height="33*"/>
+                </Grid.RowDefinitions>
+                
+                <Viewbox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Center">
+                    <controls:LetterSpacingTextBlock Style="{StaticResource ChargerViewTitleStyle}">
+                        버튼을 통해 커넥터 선을
+                        <LineBreak/>
+                        좌우상하로 이동시킬 수 있습니다.
+                    </controls:LetterSpacingTextBlock>
+                </Viewbox>
+                
+                <!-- 중앙 영역: 이미지와 버튼들 -->
+                <Grid Grid.Column="1" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- 상단 버튼 -->
+                    <Viewbox Grid.Column="1" Grid.Row="0" 
+                             HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                             Stretch="Uniform"
+                             Margin="0,0,0,20"
+                             MaxWidth="200" MaxHeight="68">
+                        <Button Command="{Binding MoveUpCommand}"
+                                Style="{StaticResource DirectionButtonStyle}"
+                                Width="160" Height="54">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Images/arrow.png" Width="20" Height="20" 
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <RotateTransform Angle="-90"/>
+                                    </Image.RenderTransform>
+                                </Image>
+                                <TextBlock Text="상단" Margin="5,0,0,0" VerticalAlignment="Center" 
+                                           Foreground="White" FontSize="18" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                    </Viewbox>
+                    
+                    <!-- 좌측 버튼 -->
+                    <Viewbox Grid.Column="0" Grid.Row="2" 
+                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                             Stretch="Uniform"
+                             Margin="0,0,20,0"
+                             MaxWidth="200" MaxHeight="68">
+                        <Button Command="{Binding MoveLeftCommand}"
+                                Style="{StaticResource DirectionButtonStyle}"
+                                Width="160" Height="54">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Images/arrow.png" Width="20" Height="20" 
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <RotateTransform Angle="180"/>
+                                    </Image.RenderTransform>
+                                </Image>
+                                <TextBlock Text="좌측" Margin="5,0,0,0" VerticalAlignment="Center" 
+                                           Foreground="White" FontSize="18" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                    </Viewbox>
+                    
+                    <!-- 중앙 이미지 -->
+                    <Image Grid.Column="1" Grid.Row="2" 
+                           Source="/Images/img_chaevi_cylinder.png" 
+                           Width="120" Height="120"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    
+                    <!-- 우측 버튼 -->
+                    <Viewbox Grid.Column="2" Grid.Row="2" 
+                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                             Stretch="Uniform"
+                             Margin="20,0,0,0"
+                             MaxWidth="200" MaxHeight="68">
+                        <Button Command="{Binding MoveRightCommand}"
+                                Style="{StaticResource DirectionButtonStyle}"
+                                Width="160" Height="54">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="우측" Margin="0,0,5,0" VerticalAlignment="Center" 
+                                           Foreground="White" FontSize="18" FontWeight="Bold"/>
+                                <Image Source="/Images/arrow.png" Width="20" Height="20" 
+                                       RenderTransformOrigin="0.5,0.5"/>
+                            </StackPanel>
+                        </Button>
+                    </Viewbox>
+                    
+                    <!-- 하단 버튼 -->
+                    <Viewbox Grid.Column="1" Grid.Row="4" 
+                             HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                             Stretch="Uniform"
+                             Margin="0,20,0,0"
+                             MaxWidth="200" MaxHeight="68">
+                        <Button Command="{Binding MoveDownCommand}"
+                                Style="{StaticResource DirectionButtonStyle}"
+                                Width="160" Height="54">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Images/arrow.png" Width="20" Height="20" 
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <RotateTransform Angle="90"/>
+                                    </Image.RenderTransform>
+                                </Image>
+                                <TextBlock Text="하단" Margin="5,0,0,0" VerticalAlignment="Center" 
+                                           Foreground="White" FontSize="18" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                    </Viewbox>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,89 @@
+﻿<UserControl x:Class="EvChargerUI.Views.DualChannel.CalcChargeAmountView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="360" d:DesignWidth="348">
+    <Grid >
+        <Border Background="#FFFFFF"  CornerRadius="6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26*"/>
+                    <ColumnDefinition Width="296*"/>
+                    <ColumnDefinition Width="26*"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26*"/>
+                        <RowDefinition Height="62*"/>
+                        <RowDefinition Height="6*"/>
+                        <RowDefinition Height="34*"/>
+                        <RowDefinition Height="82*"/>
+                        <RowDefinition Height="66*"/>
+                        <RowDefinition Height="8*"/>
+                        <RowDefinition Height="50*"/>
+                        <RowDefinition Height="26*"/>
+                    </Grid.RowDefinitions>
+                    <Viewbox Grid.Row="1">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargerViewHighlightTitleStyle}">
+                            사전 결제 금액 취소 및 
+                            <LineBreak/>
+                            금액 정산이 완료 되었습니다.
+                        </controls:LetterSpacingTextBlock>
+                    </Viewbox>
+                    <Viewbox Grid.Row="3">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource CalcChargeAmountSubtitleStyle}">
+                            정산 요청 후 카드사 영업일 기준 1~14일 후 최종 취쇠 처리됩니다.
+                            <LineBreak/>
+                            부분취소의 경우 카드사에서 취소 안내 문자를 발송하지 않습니다.
+                        </controls:LetterSpacingTextBlock>
+                    </Viewbox>
+                    <Grid Grid.Row="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="69*"/>
+                            <ColumnDefinition Width="69*"/>
+                            <ColumnDefinition Width="20*"/>
+                            <ColumnDefinition Width="69*"/>
+                            <ColumnDefinition Width="69*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="17*"/>
+                            <RowDefinition Height="18*"/>
+                            <RowDefinition Height="17*"/>
+                            <RowDefinition Height="18*"/>
+                        </Grid.RowDefinitions>
+                        <Viewbox Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left">
+                            <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="사전 결제 금액"/>
+                        </Viewbox>
+                        <Viewbox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right">
+                            <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding UserSetCost, StringFormat={}{0:N0}원}"/>
+                        </Viewbox>
+                        <Viewbox Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left">
+                            <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="충전금액"/>
+                        </Viewbox>
+                        <Viewbox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right">
+                            <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding ChargingCost, StringFormat={}{0:N0}원}"/>
+                        </Viewbox>
+                        <Viewbox Grid.Row="0" Grid.Column="3" HorizontalAlignment="Left">
+                            <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="취소 요청 금액"/>
+                        </Viewbox>
+                        <Viewbox Grid.Row="0" Grid.Column="4" HorizontalAlignment="Right">
+                            <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding CancelCost, StringFormat={}{0:N0}원}" />
+                        </Viewbox>
+
+                        <Line Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="296" Y2="0" Stretch="Fill"></Line>
+                        <Line Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="296" Y2="0" Stretch="Fill"></Line>
+                        <Line Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="296" Y2="0" Stretch="Fill"></Line>
+
+                    </Grid>
+                    <Button Grid.Row="7"  Grid.Column="1"  Command="{Binding ConfrimCalcChargeAmountCommand}" Grid.ColumnSpan="3" Style="{StaticResource CommonConfirmButtonStyle}"/>
+
+                </Grid>
+            </Grid>
+    
+        </Border>
+    </Grid>
+</UserControl>

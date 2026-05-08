@@ -1,0 +1,103 @@
+## ============================
+## Visual Studio / .NET ignore
+## ============================
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]ogs/
+*.log
+
+# Visual Studio folders
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.userprefs
+
+# Build artifacts
+*.dll
+*.exe
+*.pdb
+*.cache
+*.mdb
+*.dbmdl
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# Test results
+TestResult*/
+[TestResults]/
+*.trx
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.orig
+*.rej
+
+# Publish outputs
+publish/
+dist/
+out/
+_release/
+_release_temp/
+_release_build/
+
+# Rider / JetBrains cache
+.idea/
+*.iml
+
+# WPF specific
+*.g.*
+*.iobj
+*.ipdb
+*.resources
+*.baml
+*.g.cs
+*.g.vb
+*.g.i.cs
+*.xaml.cs~
+
+# Local configuration
+*.DotSettings.user
+appsettings.Development.json
+secrets.json
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Cursor IDE
+.cursor/
+.vscode/
+
+# Private documentation
+Architecture.md
+gemini.md
+custom.mdc
+
+# Logs under bin/Debug/LOGS (your project has these)
+**/bin/**/LOGS/
+**/bin/**/logs/
+
+# Vendor DLLs (not included in gitignore)
+!NVCAT.dll
+!Utils.dll
+
+# Setting Files
+!bin/Debug/settings.ini
+!bin/Release/settings.ini
+
+# EvChargerTestServer folder
+EvChargerTestServer/

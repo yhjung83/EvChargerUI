@@ -1,0 +1,221 @@
+<UserControl x:Class="EvChargerUI.Views.DualChannel.ChargingProgressView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="360" d:DesignWidth="348">
+    <Grid>
+        <Border CornerRadius="6">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#C9D9CB" Offset="0.0"/>
+                    <GradientStop Color="#A0CBA4" Offset="0.4"/>
+                    <GradientStop Color="#75BFD8" Offset="1.0"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="12*"/>
+                    <RowDefinition Height="15*"/>
+                    <RowDefinition Height="15*"/>
+                    <RowDefinition Height="132*"/>
+                    <RowDefinition Height="36*"/>
+                    <RowDefinition Height="124*"/>
+                    <RowDefinition Height="26*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="12*"/>
+                        <ColumnDefinition Width="15*"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="318*"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Column="1" Source="/Images/ic_alert.png"/>
+                    <Grid Grid.Column="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="13*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Viewbox Grid.Row="1" HorizontalAlignment="Left">
+                            <controls:LetterSpacingTextBlock Text="{Binding ChargeLimitTime, StringFormat='최대 {0}분까지만 충전 가능'}" Style="{StaticResource ChargingProgressAlertStyle}"></controls:LetterSpacingTextBlock>
+                        </Viewbox>
+                    </Grid>
+                </Grid>
+
+                <Viewbox Grid.Row="3">
+                    <Grid Width="132" Height="132">
+                        <Ellipse Width="132" Height="132" Fill="#99F0F0F0"/>
+                        <Grid>
+                            <Grid.Clip>
+                                <EllipseGeometry Center="66,66" RadiusX="66" RadiusY="66"/>
+                            </Grid.Clip>
+                            <Rectangle x:Name="ProgressFill"
+                                       Width="132"
+                                       VerticalAlignment="Bottom"
+                                       Fill="#FFFFFF">
+                                <Rectangle.Height>
+                                    <MultiBinding Converter="{StaticResource ProgressToHeightConverter}">
+                                        <Binding Path="Progress" />
+                                        <Binding RelativeSource="{RelativeSource AncestorType=Grid}" Path="ActualHeight"/>
+                                    </MultiBinding>
+                                </Rectangle.Height>
+                            </Rectangle>
+                        </Grid>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="28*"/>
+                                <RowDefinition Height="43*"/>
+                                <RowDefinition Height="2*"/>
+                                <RowDefinition Height="14*"/>
+                                <RowDefinition Height="2*"/>
+                                <RowDefinition Height="14*"/>
+                                <RowDefinition Height="29*"/>
+                            </Grid.RowDefinitions>
+                            <controls:LetterSpacingTextBlock Grid.Row="1" Text="{Binding Progress, StringFormat={}{0}%}" Style="{StaticResource ChargingProgressNumberStyle}"/>
+                            <controls:LetterSpacingTextBlock Grid.Row="3" Text="충전중입니다." Style="{StaticResource ChargingProgressTextStyle}"/>
+                            <Button Grid.Row="5" Command="{Binding OpenChargingSpeedHelpCommand}" Background="Transparent" BorderThickness="0">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button" >
+                                        <TextBlock TextAlignment="Center" VerticalAlignment="Center"
+                                                   FontFamily="{StaticResource PretendardBoldFont}" FontSize="12" LineHeight="14"
+                                                   Foreground="#171616" TextDecorations="Underline" FontWeight="SemiBold">
+                                            <Run Text="{Binding Speed, StringFormat={}{0:F1}}" />
+                                            <Run Text="kW" />
+                                        </TextBlock>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Viewbox>
+               
+
+                <Grid Grid.Row="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="17*"/>
+                        <RowDefinition Height="16*"/>
+                        <RowDefinition Height="17*"/>
+                        <RowDefinition Height="16*"/>
+                        <RowDefinition Height="8*"/>
+                        <RowDefinition Height="50*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="26*"/>
+                        <ColumnDefinition Width="69*"/>
+                        <ColumnDefinition Width="69*"/>
+                        <ColumnDefinition Width="20*"/>
+                        <ColumnDefinition Width="69*"/>
+                        <ColumnDefinition Width="69*"/>
+                        <ColumnDefinition Width="26*"/>
+                    </Grid.ColumnDefinitions>
+                    <Viewbox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingProgressSubjectStyle}" Text="충전시간"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingProgressContentStyle}" Text="{Binding ChargeTime}"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingProgressSubjectStyle}" Text="충전량"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingProgressContentStyle}" Text="{Binding PowerMeter, StringFormat={}{0:N2}kWh}"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="0" Grid.Column="4" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingProgressSubjectStyle}" Text="충전금액"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="0" Grid.Column="5" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingProgressContentStyle}" Text="{Binding ChargingCost, StringFormat={}{0:N0}원}"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="2" Grid.Column="4" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingProgressSubjectStyle}" Text="설정금액"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="2" Grid.Column="5" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingProgressContentStyle}" Text="{Binding UserSetCost, StringFormat={}{0:N0}원}"/>
+                    </Viewbox>
+                    <Line Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#4CFFFFFF" StrokeThickness="1" X1="0" Y1="0" X2="296" Y2="0" Stretch="Fill"></Line>
+                    <Line Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#4CFFFFFF" StrokeThickness="1" X1="0" Y1="0" X2="296" Y2="0" Stretch="Fill"></Line>
+                    <Line Grid.Row="1" Grid.Column="4" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#4CFFFFFF" StrokeThickness="1" X1="0" Y1="0" X2="296" Y2="0" Stretch="Fill"></Line>
+                    <Line Grid.Row="3" Grid.Column="4" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#4CFFFFFF" StrokeThickness="1" X1="0" Y1="0" X2="296" Y2="0" Stretch="Fill"></Line>
+
+                    <Button  Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="5"  Command="{Binding CompleteChargingCommand}"   Background="Transparent" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button" >
+                                <Grid>
+                                    <Border Background="#FFFFFF" BorderThickness="0" CornerRadius="6" />
+                                    <Grid >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="110*"></ColumnDefinition>
+                                            <ColumnDefinition Width="76*"></ColumnDefinition>
+                                            <ColumnDefinition Width="110*"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="13*"></RowDefinition>
+                                            <RowDefinition Height="25*"></RowDefinition>
+                                            <RowDefinition Height="12*"></RowDefinition>
+                                        </Grid.RowDefinitions>
+
+                                        <Viewbox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center">
+                                            <controls:LetterSpacingTextBlock Text="충전완료" Style="{StaticResource ButtonTextStyle}" />
+                                        </Viewbox>
+
+                                    </Grid>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="26*"/>
+                <RowDefinition Height="34*"/>
+                <RowDefinition Height="300*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="222*"/>
+                <ColumnDefinition Width="100*"/>
+                <ColumnDefinition Width="26*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Row="1" Grid.Column="1"  Command="{Binding OpenRegisterChargeEndAlarmHelpPopupCommand}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource ImageButtonStyle}">
+                        <Setter Property="IsEnabled" Value="True"/>
+                        <Setter Property="Content">
+                            <Setter.Value>
+                                <Image Source="/Images/btn_reserve_complete_alarm.png"/>
+                            </Setter.Value>
+                        </Setter>
+
+                        <Style.Triggers>
+                            <!-- 문자열이 있을 때 (버튼 비활성화 + 다른 이미지) -->
+                            <DataTrigger Binding="{Binding ChargeEndCallbackPhoneNumber}" Value="">
+                                <!-- Value="" 이면 빈 문자열일 때. 
+                         문자열 있을 때를 체크하려면 Converter나 Trigger 변경 필요 -->
+                                <Setter Property="IsEnabled" Value="True"/>
+                            </DataTrigger>
+
+                            <DataTrigger Binding="{Binding ChargeEndCallbackPhoneNumber}" Value="{x:Null}">
+                                <Setter Property="IsEnabled" Value="True"/>
+                            </DataTrigger>
+
+                            <!-- 문자열이 있는 경우 (NotNullOrEmpty 체크는 Converter 사용) -->
+                            <DataTrigger Binding="{Binding ChargeEndCallbackPhoneNumber, Converter={StaticResource StringNotEmptyConverter}}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <Image Source="/Images/btn_reserve_complete_alarm_disabled.png"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+    </Grid>
+</UserControl>

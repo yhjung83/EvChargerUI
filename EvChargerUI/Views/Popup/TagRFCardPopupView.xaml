@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="EvChargerUI.Views.Popup.TagRFCardPopupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views.Popup" xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="345" d:DesignWidth="360">
+    <Grid>
+        <Border Grid.Column="0"  Background="#FFFFFF" BorderThickness="0" CornerRadius="12"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="26*"/>
+                <ColumnDefinition Width="308*"/>
+                <ColumnDefinition Width="26*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="28*"/>
+                    <RowDefinition Height="28*"/>
+                    <RowDefinition Height="30*"/>
+                    <RowDefinition Height="159*"/>
+                    <RowDefinition Height="25*"/>
+                    <RowDefinition Height="49*"/>
+                    <RowDefinition Height="26*"/>
+                </Grid.RowDefinitions>
+                <Viewbox Grid.Row="1">
+                    <controls:LetterSpacingTextBlock Style="{StaticResource  PopupTitleStyle}"  Text="회원카드를 리더기에 태깅 해주세요"/>
+                </Viewbox>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="75*"/>
+                        <ColumnDefinition Width="159*"/>
+                        <ColumnDefinition Width="75*"/>
+                    </Grid.ColumnDefinitions>
+                        
+                    <Image Grid.Column="1" x:Name="TagRfCardImage"/>
+                </Grid>
+                <Button Grid.Row="5" Command="{Binding ClosePopupTagRFCardCommand}"  Style="{StaticResource CancelPopupButtonStyle}"/>
+                
+            </Grid>
+            
+        </Grid>
+    </Grid>
+</UserControl>

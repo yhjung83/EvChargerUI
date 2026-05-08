@@ -1,0 +1,99 @@
+<UserControl x:Class="EvChargerUI.Views.SingleChannel.ChaeviReadyToChargeLRView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="360" d:DesignWidth="720">
+    <Grid>
+        <Border Background="#FFFFFF" CornerRadius="6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26*"/>
+                    <ColumnDefinition Width="98*"/>
+                    <ColumnDefinition Width="58*"/>
+                    <ColumnDefinition Width="20*"/>
+                    <ColumnDefinition Width="100*"/>
+                    <ColumnDefinition Width="20*"/>
+                    <ColumnDefinition Width="58*"/>
+                    <ColumnDefinition Width="98*"/>
+                    <ColumnDefinition Width="26*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="26*"/>
+                    <RowDefinition Height="31*"/>
+                    <RowDefinition Height="23*"/>
+                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="40*"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="144*"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="40*"/>
+                    <RowDefinition Height="32*"/>
+                </Grid.RowDefinitions>
+
+                <Viewbox Grid.Column="1" Grid.ColumnSpan="7" Grid.Row="1" HorizontalAlignment="Left">
+                    <controls:LetterSpacingTextBlock Style="{StaticResource SingleChargerViewTitleStyle}">
+                        차량에 커넥터를 연결하면 자동으로 충전이 시작됩니다.
+                    </controls:LetterSpacingTextBlock>
+                </Viewbox>
+
+                <Viewbox Grid.Column="1" Grid.ColumnSpan="7" Grid.Row="2" HorizontalAlignment="Left">
+                    <controls:LetterSpacingTextBlock Style="{StaticResource SingleChargerViewSubTitleStyle}">
+                        버튼을 통해 커넥터 선을 좌우로 이동시킬 수 있습니다.
+                    </controls:LetterSpacingTextBlock>
+                </Viewbox>
+
+                <!-- 좌측 버튼 -->
+                <Viewbox Grid.Column="1" Grid.Row="6" 
+                         Grid.ColumnSpan="2"
+                         HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                         Stretch="Uniform"
+                         MaxWidth="160" MaxHeight="68">
+                    <Button x:Name="LeftButton"
+                            PreviewMouseDown="LeftButton_MouseDown" PreviewMouseUp="Button_MouseUp"
+                            Style="{StaticResource DirectionButtonStyle}"
+                            Width="100" Height="44">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Images/arrow.png" Width="20" Height="20" 
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Image.RenderTransform>
+                                    <RotateTransform Angle="180"/>
+                                </Image.RenderTransform>
+                            </Image>
+                            <TextBlock Text="좌측" Margin="5,0,0,0" VerticalAlignment="Center" 
+                       Foreground="White" FontSize="18" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Button>
+                </Viewbox>
+
+                <!-- 중앙 이미지 -->
+                <Image Grid.Column="4" Grid.Row="6" 
+                        Source="/Images/img_chaevi_cylinder.png" 
+                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                <!-- 우측 버튼 -->
+                <Viewbox Grid.Column="6" Grid.Row="6" 
+                         Grid.ColumnSpan="2"
+                         HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                         Stretch="Uniform"
+                         MaxWidth="160" MaxHeight="68">
+                    <Button x:Name="RightButton"
+                            PreviewMouseDown="RightButton_MouseDown" PreviewMouseUp="Button_MouseUp"
+                            Style="{StaticResource DirectionButtonStyle}"
+                            Width="100" Height="44">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="우측" Margin="0,0,5,0" VerticalAlignment="Center" 
+                       Foreground="White" FontSize="18" FontWeight="Bold"/>
+                            <Image Source="/Images/arrow.png" Width="20" Height="20" 
+                   RenderTransformOrigin="0.5,0.5"/>
+                        </StackPanel>
+                    </Button>
+                </Viewbox>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
+

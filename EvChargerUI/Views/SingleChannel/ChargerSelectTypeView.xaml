@@ -1,0 +1,93 @@
+﻿<UserControl x:Class="EvChargerUI.Views.SingleChannel.ChargerSelectTypeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="360" d:DesignWidth="720">
+    <Grid>
+        <Button  Command="{Binding SelectPaymentMethodCommand}" Background="Transparent" BorderThickness="0">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="#FFFFFF"  CornerRadius="6">
+                        <Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="26*"></ColumnDefinition>
+                                    <ColumnDefinition Width="160*"></ColumnDefinition>
+                                    <ColumnDefinition Width="32*"></ColumnDefinition>
+                                    <ColumnDefinition Width="284*"></ColumnDefinition>
+                                    <ColumnDefinition Width="218*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="26*"></RowDefinition>
+                                    <RowDefinition Height="31*"></RowDefinition>
+                                    <RowDefinition Height="5*"></RowDefinition>
+                                    <RowDefinition Height="24*"></RowDefinition>
+                                    <RowDefinition Height="3*"></RowDefinition>
+                                    <RowDefinition Height="223*"></RowDefinition>
+                                    <RowDefinition Height="48*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Viewbox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4"  Stretch="Uniform" HorizontalAlignment="Left">
+                                    <controls:LetterSpacingTextBlock Style="{StaticResource SingleChargerViewTitleStyle}" Text="화면을 탭해주세요."/>
+                                </Viewbox>
+                                <Grid Grid.Row="3" Grid.Column="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="24*"/>
+                                        <ColumnDefinition Width="4*"/>
+                                        <ColumnDefinition Width="50*"/>
+                                        <ColumnDefinition Width="80*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0" Source="{Binding ConnectorTypeIcon}"/>
+                                    <Grid Grid.Column="2" Grid.ColumnSpan="3">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="1*"/>
+                                            <RowDefinition Height="22*"/>
+                                            <RowDefinition Height="1*"/>
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Viewbox Margin="0,4,4,0">
+                                                <controls:LetterSpacingTextBlock Text="{Binding ConnectorTypeText}" Style="{StaticResource ChargerTypeStyle}"/>
+                                            </Viewbox>
+                                            <Button Background="Transparent" BorderThickness="0" Command="{Binding OpenConnectorHelpCommand}">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button" >
+                                                        <Image Source="/Images/ic_help_gray.png"/>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                                <Image Grid.Row="5" Grid.Column="3" Source="/Images/img_ready_connector.png"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="301*"></RowDefinition>
+                                    <RowDefinition Height="33*"></RowDefinition>
+                                    <RowDefinition Height="26*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="26*"></ColumnDefinition>
+                                    <ColumnDefinition Width="71*"></ColumnDefinition>
+                                    <ColumnDefinition Width="623*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1"  Orientation="Horizontal"   VerticalAlignment="Center" HorizontalAlignment="Left">
+
+                                    <Image Source="/Images/btn_usable.png" Height="45" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                                    <Image x:Name="Test1" Source="/Images/btn_test.png" Height="45" VerticalAlignment="Center" Margin="0,0,10,0" Visibility="{Binding TestVisibility}"/>
+
+                                    <Image x:Name="PayYN1" Source="/Images/btn_payYN.png" Height="45" VerticalAlignment="Center" Visibility="{Binding PayYNVisibility}"/>
+
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
+</UserControl>

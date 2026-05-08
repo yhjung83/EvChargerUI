@@ -1,0 +1,207 @@
+<UserControl x:Class="EvChargerUI.Views.Popup.CreditCardReceiptPopupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EvChargerUI.Views.Popup"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="420" d:DesignWidth="708">
+    <Grid>
+        <Border Background="#FFFFFF" BorderThickness="0" CornerRadius="12"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="31*"/>
+                <RowDefinition Height="35*"/>
+                <RowDefinition Height="305*"/>
+                <RowDefinition Height="31*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30*"/>
+                <ColumnDefinition Width="319*"/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="319*"/>
+                <ColumnDefinition Width="30*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 타이틀과 버튼 -->
+            <Grid Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Viewbox Grid.Column="0" HorizontalAlignment="Left">
+                    <controls:LetterSpacingTextBlock Style="{StaticResource LargePopupTitleStyle}" Text="신용카드 전표 (고객용)"/>
+                </Viewbox>
+                <Button Grid.Column="1" 
+                        Command="{Binding CloseCreditCardReceiptCommand}" 
+                        Style="{StaticResource CommonConfirmButtonStyle}"/>
+            </Grid>
+
+            <!-- 전표 정보 영역 -->
+            <!-- 왼쪽 컬럼 -->
+            <Border Grid.Row="2" Grid.Column="1" CornerRadius="8" Background="Transparent" Margin="0,8,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="158*"/>
+                        <ColumnDefinition Width="5*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="18*"/>
+                    </Grid.RowDefinitions>
+
+                    <Viewbox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="가맹점 명"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding MerchantName}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="가맹 번호"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding MerchantNumber}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="5" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="카드 번호"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="5" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding CardNumber}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="7" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="카드사 명"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="7" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding CardCompanyName}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="9" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="매입사 명"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="9" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding AcquirerName}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="11" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="할부 개월"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="11" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding InstallmentMonths}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="13" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="거래 금액"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="13" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding TransactionAmount, StringFormat={}{0:N0}}"/>
+                    </Viewbox>
+
+                    <Line Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="12" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="14" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                </Grid>
+            </Border>
+
+            <!-- 오른쪽 컬럼 -->
+            <Border Grid.Row="2" Grid.Column="3" CornerRadius="8" Background="Transparent" Margin="0,8,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="60*"/>
+                        <ColumnDefinition Width="148*"/>
+                        <ColumnDefinition Width="5*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="24*"/>
+                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="18*"/>
+                    </Grid.RowDefinitions>
+
+                    <Viewbox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="부가세"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding Vat, StringFormat={}{0:N0}}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="결제 금액"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding PaymentAmount, StringFormat={}{0:N0}}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="5" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="승인 번호"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="5" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding ApprovalNumber}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="7" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="승인일시"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="7" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding ApprovalDateTime}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="9" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="단말기"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="9" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding TerminalNumber}"/>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="11" Grid.Column="1" HorizontalAlignment="Left">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteSubjectStyle}" Text="충전량(kWh)"/>
+                    </Viewbox>
+                    <Viewbox Grid.Row="11" Grid.Column="2" HorizontalAlignment="Right">
+                        <controls:LetterSpacingTextBlock Style="{StaticResource ChargingCompleteContentStyle}" Text="{Binding ChargeAmount, StringFormat={}{0:N2}}"/>
+                    </Viewbox>
+
+                    <Line Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                    <Line Grid.Row="12" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Stroke="#DEE2E7" StrokeThickness="1" X1="0" Y1="0" X2="284" Y2="0" Stretch="Fill"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

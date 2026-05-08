@@ -1,0 +1,130 @@
+<UserControl x:Class="EvChargerUI.Views.PriceScheduleView.PriceScheduleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:EvChargerUI.Commons.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="440" d:DesignWidth="728">
+    <UserControl.Resources>
+        <Style x:Key="AdminButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="#1BA1C8" CornerRadius="4">
+                            <controls:LetterSpacingTextBlock FontFamily="{StaticResource PretendardBoldFont}" FontSize="14" LineHeight="20" Foreground="#FFFFFF" LetterSpacing="-0.2" Text="{TemplateBinding Content}" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Width="170" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PriceTabUnselectedButtonStyle" TargetType="Button" BasedOn="{StaticResource AdminButtonStyle}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="#E8EEF3" CornerRadius="4">
+                            <controls:LetterSpacingTextBlock FontFamily="{StaticResource PretendardBoldFont}" FontSize="14" LineHeight="20" Foreground="#475263" LetterSpacing="-0.2" Text="{TemplateBinding Content}" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#D8E2EC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="HourlyPriceTextStyle" TargetType="TextBlock">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="2,0,2,0"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Background" Value="#FFFFC7"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="#FFFFFF">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="16,12,16,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="#1BA1C8" CornerRadius="4" Padding="12,12" VerticalAlignment="Stretch">
+                <controls:LetterSpacingTextBlock Text="단가 스케줄 확인" FontFamily="{StaticResource PretendardBoldFont}" FontSize="15" LineHeight="22" Foreground="#FFFFFF" LetterSpacing="-0.2" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
+            </Border>
+            <Button Grid.Column="2" Content="변경 이력" Command="{Binding ShowChangeLogCommand}" Style="{StaticResource PriceTabUnselectedButtonStyle}" Height="44" Padding="12,0"/>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="16,0,16,8">
+            <TextBlock Text="{Binding StationInfoText}" FontSize="13" Foreground="#475263" Margin="0,0,0,2"/>
+            <TextBlock Text="{Binding DbPathText}" FontSize="12" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="2"
+                  Margin="16,0,16,10"
+                  ItemsSource="{Binding PriceSchedules}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  ScrollViewer.VerticalScrollBarVisibility="Visible"
+                  ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                  ScrollViewer.CanContentScroll="True"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="All"
+                  RowHeaderWidth="0"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="55"/>
+                <DataGridTextColumn Header="생성일시" Binding="{Binding CreateDate}" Width="110"/>
+                <DataGridTextColumn Header="적용시작" Binding="{Binding ApplyDate}" Width="110"/>
+                <DataGridTextColumn Header="적용종료" Binding="{Binding EndDate}" Width="110"/>
+                <DataGridTextColumn Header="적용상태" Binding="{Binding AppliedStatus}" Width="180"/>
+                <DataGridTextColumn Header="현재시간 단가" Binding="{Binding CurrentHourPriceText}" Width="95"/>
+                <DataGridTemplateColumn Header="H00" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[0]}" Text="{Binding HourlyPrices[0], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H01" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[1]}" Text="{Binding HourlyPrices[1], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H02" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[2]}" Text="{Binding HourlyPrices[2], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H03" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[3]}" Text="{Binding HourlyPrices[3], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H04" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[4]}" Text="{Binding HourlyPrices[4], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H05" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[5]}" Text="{Binding HourlyPrices[5], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H06" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[6]}" Text="{Binding HourlyPrices[6], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H07" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[7]}" Text="{Binding HourlyPrices[7], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H08" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[8]}" Text="{Binding HourlyPrices[8], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H09" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[9]}" Text="{Binding HourlyPrices[9], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H10" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[10]}" Text="{Binding HourlyPrices[10], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H11" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[11]}" Text="{Binding HourlyPrices[11], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H12" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[12]}" Text="{Binding HourlyPrices[12], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H13" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[13]}" Text="{Binding HourlyPrices[13], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H14" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[14]}" Text="{Binding HourlyPrices[14], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H15" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[15]}" Text="{Binding HourlyPrices[15], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H16" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[16]}" Text="{Binding HourlyPrices[16], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H17" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[17]}" Text="{Binding HourlyPrices[17], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H18" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[18]}" Text="{Binding HourlyPrices[18], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H19" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[19]}" Text="{Binding HourlyPrices[19], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H20" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[20]}" Text="{Binding HourlyPrices[20], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H21" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[21]}" Text="{Binding HourlyPrices[21], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H22" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[22]}" Text="{Binding HourlyPrices[22], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="H23" Width="58"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource HourlyPriceTextStyle}" Tag="{Binding HourlyMismatchFlags[23]}" Text="{Binding HourlyPrices[23], StringFormat={}{0:F1}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,16,12">
+            <Button Content="새로고침" Command="{Binding ReloadCommand}" Style="{StaticResource AdminButtonStyle}" Height="36" Margin="0,0,8,0"/>
+            <Button Content="뒤로" Command="{Binding BackCommand}" Style="{StaticResource AdminButtonStyle}" Height="36"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
