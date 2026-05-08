@@ -60,7 +60,70 @@ namespace EvChargerUI.ViewModels
 
         protected ChargeSequence _currentChargeSequence;
         protected ChargerViewModel _otherChargerViewModel;
-        
+
+        // ── 듀얼 채널 동시 클릭 경쟁 방지 ─────────────────────────────────────────
+        // 두 채널이 거의 동시에 SelectPaymentMethod를 호출할 때 하나만 진입 허용
+        private static readonly object _dualChannelSelectSync = new object();
+        private static int _dualChannelSelectOwner = -1; // -1=소유자 없음, 0/1=채널 번호
+        private bool _isSelectPaymentMethodInProgress = false;
+
+        // Home 버튼 연속 클릭 방지 (UI 경로 전용)
+        private bool _isHomeInitializeClickLocked = false;
+        private DateTime _lastHomeInitializeAt = DateTime.MinValue;
+        private static readonly TimeSpan _homeInitializeDebounce = TimeSpan.FromMilliseconds(700);
+
+        /// <summary>
+        /// 듀얼 채널 선택 소유권 획득 시도.
+        /// 이미 다른 채널이 점유 중이면 false를 반환한다.
+        /// </summary>
+        private bool TryAcquireDualChannelSelectOwnership()
+        {
+            lock (_dualChannelSelectSync)
+            {
+                // 이미 이 채널이 소유 중 → 재진입 허용
+                if (_dualChannelSelectOwner == _chargerChannel.ChannelNo)
+                    return true;
+
+                // 다른 채널이 점유 중 → 차단
+                if (_dualChannelSelectOwner != -1)
+                {
+                    _logger.Warn($"[DualChannel][CH{_chargerChannel.ChannelNo}] SelectPaymentMethod 진입 차단 — 채널 {_dualChannelSelectOwner} 이 이미 결제/커넥터 단계 점유 중");
+                    return false;
+                }
+
+                // 상대방 ViewModel 상태 이중 검사 (lock 외부의 상태 변경 방어)
+                if (_otherChargerViewModel != null)
+                {
+                    var otherSeq = _otherChargerViewModel.CurrentChargeSequence;
+                    if (otherSeq == ChargeSequence.SelectPaymentMethod || otherSeq == ChargeSequence.PlugConnector)
+                    {
+                        _logger.Warn($"[DualChannel][CH{_chargerChannel.ChannelNo}] SelectPaymentMethod 진입 차단 — 상대방 채널 상태: {otherSeq}");
+                        return false;
+                    }
+                }
+
+                _dualChannelSelectOwner = _chargerChannel.ChannelNo;
+                _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] 듀얼 채널 선택 소유권 획득 (owner={_dualChannelSelectOwner})");
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 현재 채널이 소유 중인 경우에만 소유권을 해제한다.
+        /// </summary>
+        private void ReleaseDualChannelSelectOwnership()
+        {
+            lock (_dualChannelSelectSync)
+            {
+                if (_dualChannelSelectOwner == _chargerChannel.ChannelNo)
+                {
+                    _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] 듀얼 채널 선택 소유권 해제 (owner: {_dualChannelSelectOwner} → -1)");
+                    _dualChannelSelectOwner = -1;
+                }
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
         protected bool _isWaitingOtherSide;
         public bool IsWaitingOtherSide
         {
@@ -656,6 +719,7 @@ namespace EvChargerUI.ViewModels
         public ICommand StartChargingCommand { get; set; }
         public ICommand CompleteChargingCommand { get; set; }
         public ICommand InitializeChargerCommand { get; set; }
+        public ICommand HomeInitializeChargerCommand { get; set; }
 
         public ICommand SelectICCardCommand { get; set; }
         public ICommand SelectRFCardCommand { get; set; }
@@ -888,6 +952,7 @@ namespace EvChargerUI.ViewModels
             OpenChargingSpeedHelpCommand = new RelayCommand(OpenChargingSpeedHelp);
             StartChargingCommand = new RelayCommand(StartCharging);
             CompleteChargingCommand = new RelayCommand((param) => CompleteCharging("user"));
+            HomeInitializeChargerCommand = new RelayCommand(HomeInitializeCharger);
             InitializeChargerCommand = new RelayCommand(p => InitializeCharger(p));
 
             SelectRFCardCommand = new RelayCommand(SelectRFCard);
@@ -944,6 +1009,30 @@ namespace EvChargerUI.ViewModels
             ConfirmEndChargingCommand = new RelayCommand(ConfirmEndCharging);
         }
 
+        private void HomeInitializeCharger(object param)
+        {
+            var now = DateTime.UtcNow;
+
+            if (_isHomeInitializeClickLocked || (now - _lastHomeInitializeAt) < _homeInitializeDebounce)
+            {
+                _logger.Info($"[HomeInitialize] ignored - CH{_chargerChannel.ChannelNo}");
+                return;
+            }
+
+            _isHomeInitializeClickLocked = true;
+            _lastHomeInitializeAt = now;
+
+            try
+            {
+                IsHomeButtonEnabled = false;
+                InitializeCharger(param);
+            }
+            finally
+            {
+                _isHomeInitializeClickLocked = false;
+            }
+        }
+
         private void RefreshChargerSequence()
         {
             // 무한 루프 방지
@@ -962,6 +1051,14 @@ namespace EvChargerUI.ViewModels
                 _paymentMethodSelectTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(AppSettingsManager.ChargerTimerSettings.PaymentMethodSelectViewTimer) };
                 _paymentMethodSelectTimer.Tick += PaymentMethodSelectTimer_Tick;
 
+                // SelectConnector 단계(초기화)로 돌아오면 소유권 해제
+                if (CurrentChargeSequence == ChargeSequence.SelectConnector ||
+                    CurrentChargeSequence == ChargeSequence.WaitReservation ||
+                    CurrentChargeSequence == ChargeSequence.Completed)
+                {
+                    ReleaseDualChannelSelectOwnership();
+                }
+
                 // 다른 쪽이 SelectPaymentMethod나 PlugConnector 상태이고, 이쪽이 SelectConnector 상태일 때 대기 뷰 표시
                 bool shouldShowWaitingOtherSide = false;
                 if (_otherChargerViewModel != null && CurrentChargeSequence == ChargeSequence.SelectConnector)
@@ -970,10 +1067,16 @@ namespace EvChargerUI.ViewModels
                     if (otherSequence == ChargeSequence.SelectPaymentMethod || otherSequence == ChargeSequence.PlugConnector)
                     {
                         shouldShowWaitingOtherSide = true;
+                        _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] 대기 오버레이 표시 — 상대방 채널 상태: {otherSequence}");
                     }
                 }
 
+                bool prevWaiting = _isWaitingOtherSide;
                 IsWaitingOtherSide = shouldShowWaitingOtherSide && _waitingOtherSideView != null;
+                if (prevWaiting != _isWaitingOtherSide)
+                {
+                    _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] IsWaitingOtherSide 변경: {prevWaiting} → {_isWaitingOtherSide}");
+                }
 
                 switch (CurrentChargeSequence)
                 {
@@ -1140,22 +1243,62 @@ namespace EvChargerUI.ViewModels
 
         private async void SelectPaymentMethod(object param)
         {
-            await _charger.ReadyToCharging(_chargerChannel.ChannelNo);
+            string ts = DateTime.Now.ToString("HH:mm:ss.fff");
+            _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] SelectPaymentMethod 호출 — {ts} | 현재상태: {CurrentChargeSequence}");
 
-            _charger.SelectConnector(_chargerChannel.ChannelNo);
-
-            _chargerChannel.BasePowerMeter = _charger.GetCurrentPowerMeter(_chargerChannel.ChannelNo);
-
-            if (EvChargerUI.Commons.Settings.AppSettingsManager.EvCommSettings.EVSE_PayYN=="N")
+            // ── 이중 진입 방지 (같은 채널에서 연속 탭) ──────────────────────────────
+            if (_isSelectPaymentMethodInProgress)
             {
-                StartCharging(null);
+                _logger.Warn($"[DualChannel][CH{_chargerChannel.ChannelNo}] SelectPaymentMethod 중복 호출 무시 (이미 처리 중)");
                 return;
             }
 
-            CurrentChargeSequence = ChargeSequence.SelectPaymentMethod;
+            // ── 듀얼 채널 동시 진입 방지 ────────────────────────────────────────────
+            if (!TryAcquireDualChannelSelectOwnership())
+            {
+                // 상대방이 결제 단계 진행 중 → 대기 오버레이 표시
+                IsWaitingOtherSide = true;
+                _logger.Warn($"[DualChannel][CH{_chargerChannel.ChannelNo}] 소유권 획득 실패 — 대기 오버레이 표시");
+                return;
+            }
 
-            SoundService.Instance.PlaySoundAsync("select_payment_type.wav");
+            _isSelectPaymentMethodInProgress = true;
+            _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] SelectPaymentMethod 처리 시작 (owner={_dualChannelSelectOwner})");
 
+            try
+            {
+                // 상태를 먼저 변경해 두어 상대방 채널의 RefreshChargerSequence에서
+                // IsWaitingOtherSide가 즉시 true가 되도록 보장
+                CurrentChargeSequence = ChargeSequence.SelectPaymentMethod;
+                _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] 상태 SelectPaymentMethod 선점 완료");
+
+                await _charger.ReadyToCharging(_chargerChannel.ChannelNo);
+                _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] ReadyToCharging 완료");
+
+                _charger.SelectConnector(_chargerChannel.ChannelNo);
+
+                _chargerChannel.BasePowerMeter = _charger.GetCurrentPowerMeter(_chargerChannel.ChannelNo);
+
+                if (AppSettingsManager.EvCommSettings.EVSE_PayYN == "N")
+                {
+                    _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] 무료 충전 — StartCharging 직행");
+                    StartCharging(null);
+                    return;
+                }
+
+                SoundService.Instance.PlaySoundAsync("select_payment_type.wav");
+                _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] 결제 방식 선택 화면 표시 완료");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"[DualChannel][CH{_chargerChannel.ChannelNo}] SelectPaymentMethod 오류: {ex.Message}");
+                ReleaseDualChannelSelectOwnership();
+                InitializeCharger(null);
+            }
+            finally
+            {
+                _isSelectPaymentMethodInProgress = false;
+            }
         }
 
         private async void StartCharging(object param)
@@ -1604,11 +1747,15 @@ namespace EvChargerUI.ViewModels
 
                 _chargerChannel.CurrentSequence = ChargeSequence.WaitReservation;
                 SoundService.Instance.StopSound();
+                _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] InitializeCharger → WaitReservation 전환, 소유권 해제");
+                ReleaseDualChannelSelectOwnership();
                 CurrentChargeSequence = ChargeSequence.WaitReservation;
                 IsHomeButtonEnabled = false;
             }
             else
             {
+                _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] InitializeCharger → SelectConnector 전환, 소유권 해제");
+                ReleaseDualChannelSelectOwnership();
                 CurrentChargeSequence = ChargeSequence.SelectConnector;
                 IsHomeButtonEnabled =  true;
                 _chargerChannel.InitReservationInfo();

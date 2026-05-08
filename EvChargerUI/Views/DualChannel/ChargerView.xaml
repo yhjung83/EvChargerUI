@@ -20,7 +20,7 @@
                 <ColumnDefinition Width="12*"></ColumnDefinition>
                 <ColumnDefinition Width="300*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Command="{Binding InitializeChargerCommand}"  IsEnabled="{Binding IsHomeButtonEnabled}">
+            <Button Grid.Column="0" Command="{Binding HomeInitializeChargerCommand}"  IsEnabled="{Binding IsHomeButtonEnabled}">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource ImageButtonStyle}">
                         <Setter Property="Content">
