@@ -5,6 +5,7 @@ using System.Management;
 using System.Windows;
 using EvChargerUI.Commons.Settings;
 using EvChargerUI.Commons.Util;
+using System.Globalization;
 
 namespace EvChargerUI.Services
 {
@@ -150,6 +151,27 @@ namespace EvChargerUI.Services
         }
 
         private const int MC_CAPS_BRIGHTNESS = 0x00000001;
+
+        #endregion
+
+        #region Windows API - System Time (kernel32)
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SYSTEMTIME
+        {
+            public ushort wYear;
+            public ushort wMonth;
+            public ushort wDayOfWeek;
+            public ushort wDay;
+            public ushort wHour;
+            public ushort wMinute;
+            public ushort wSecond;
+            public ushort wMilliseconds;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetLocalTime(ref SYSTEMTIME st);
 
         #endregion
 
@@ -317,6 +339,40 @@ namespace EvChargerUI.Services
 
             _logger.Info($"[GetCurrentBrightness] Unknown (-1)");
             return -1;
+        }
+
+        public bool SetSystemTime(DateTime serverTime)
+        {
+            try
+            {
+                SYSTEMTIME st = new SYSTEMTIME
+                {
+                    wYear = (ushort)serverTime.Year,
+                    wMonth = (ushort)serverTime.Month,
+                    wDay = (ushort)serverTime.Day,
+                    wHour = (ushort)serverTime.Hour,
+                    wMinute = (ushort)serverTime.Minute,
+                    wSecond = (ushort)serverTime.Second,
+                    wMilliseconds = (ushort)serverTime.Millisecond,
+                    wDayOfWeek = 0 // Not used by SetLocalTime
+                };
+
+                bool success = SetLocalTime(ref st);
+                if (!success)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    _logger.Warn($"[TIME_SYNC] Failed to set system time. Win32Error={error}");
+                    return false;
+                }
+
+                _logger.Info($"[TIME_SYNC] Windows system time synchronized successfully. Server={serverTime:yyyy-MM-dd HH:mm:ss}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"[TIME_SYNC] Exception during SetSystemTime: {ex.Message}");
+                return false;
+            }
         }
 
         #endregion

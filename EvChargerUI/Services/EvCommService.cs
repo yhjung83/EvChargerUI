@@ -42,8 +42,9 @@ namespace EvChargerUI.Services
         private readonly IEvCommToChargerDelegate _chargerDelegate;
         private readonly ISystemSettingsService _systemSettingsService;
         private FileLogger _logger = ((App)Application.Current).AppLogger;
-        
+
         private bool _isServerConnected;
+        private bool _isTimeSyncedOnStartup = false; // 프로그램 시작 시 1회만 시간 동기화하기 위한 플래그
         
         /// <summary>
         /// 서버와의 통신 연결 상태
@@ -1776,6 +1777,9 @@ namespace EvChargerUI.Services
                 LogForRecv("RTIMESTATUS", retJObject);
                 _evCommForm.LogRecvServerComm("RTIMESTATUS", retJObject, DateTime.Now);
                 IsServerConnected = true;
+
+                // 프로그램 시작 시 1회만 시간 동기화 시도
+                TrySyncWindowsTimeOnce(retJObject);
             }
             else
             {
@@ -1943,6 +1947,107 @@ namespace EvChargerUI.Services
         {
             string str = jobj.ToString().Replace("\r\n", "").Trim();
             _logger.Info("[RECV] "+delimiter+" : " + str);
+        }
+
+        /// <summary>
+        /// 프로그램 시작 시 첫 번째 station/status 응답에서만 1회 시간 동기화 시도
+        /// </summary>
+        private void TrySyncWindowsTimeOnce(JObject retJObject)
+        {
+            // 이미 동기화를 시도한 경우 skip
+            if (_isTimeSyncedOnStartup)
+                return;
+
+            _isTimeSyncedOnStartup = true; // 중복 실행 방지
+
+            try
+            {
+                JSonParser jSonParser = _evCommForm.GetJSonParser();
+                string responseDateStr = jSonParser.GetJSonData(retJObject, "response_date");
+
+                if (string.IsNullOrEmpty(responseDateStr))
+                {
+                    _logger.Warn("[TIME_SYNC] response_date field is null or empty. Skipping time sync.");
+                    return;
+                }
+
+                // 다양한 형식으로 파싱 시도
+                DateTime serverTime;
+                if (!TryParseServerDateTime(responseDateStr, out serverTime))
+                {
+                    _logger.Warn($"[TIME_SYNC] Failed to parse response_date: {responseDateStr}. Skipping time sync.");
+                    return;
+                }
+
+                DateTime localTime = DateTime.Now;
+                TimeSpan diff = (serverTime - localTime).Duration();
+
+                _logger.Info($"[TIME_SYNC] Server={serverTime:yyyy-MM-dd HH:mm:ss}, Local={localTime:yyyy-MM-dd HH:mm:ss}, Diff={diff.TotalSeconds:F1}s");
+
+                // 5초 이상 차이 나는 경우에만 동기화
+                if (diff.TotalSeconds >= 5.0)
+                {
+                    bool success = _systemSettingsService.SetSystemTime(serverTime);
+                    if (success)
+                    {
+                        _logger.Info($"[TIME_SYNC] Windows time synchronized. Before={localTime:yyyy-MM-dd HH:mm:ss}, After={serverTime:yyyy-MM-dd HH:mm:ss}");
+                    }
+                    else
+                    {
+                        _logger.Warn($"[TIME_SYNC] SetSystemTime failed. Requires administrator privileges.");
+                    }
+                }
+                else
+                {
+                    _logger.Info($"[TIME_SYNC] Time difference is less than 5 seconds. No sync needed.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"[TIME_SYNC] Exception during TrySyncWindowsTimeOnce: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 서버 응답의 response_date를 다양한 형식으로 파싱
+        /// </summary>
+        private bool TryParseServerDateTime(string dateStr, out DateTime result)
+        {
+            result = DateTime.MinValue;
+
+            // 1) yyyyMMddHHmmss (14자리 숫자 문자열)
+            if (dateStr.Length == 14 && dateStr.All(char.IsDigit))
+            {
+                try
+                {
+                    int year = int.Parse(dateStr.Substring(0, 4));
+                    int month = int.Parse(dateStr.Substring(4, 2));
+                    int day = int.Parse(dateStr.Substring(6, 2));
+                    int hour = int.Parse(dateStr.Substring(8, 2));
+                    int minute = int.Parse(dateStr.Substring(10, 2));
+                    int second = int.Parse(dateStr.Substring(12, 2));
+                    result = new DateTime(year, month, day, hour, minute, second);
+                    return true;
+                }
+                catch { }
+            }
+
+            // 2) yyyy-MM-dd HH:mm:ss
+            if (DateTime.TryParseExact(dateStr, "yyyy-MM-dd HH:mm:ss",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out result))
+            {
+                return true;
+            }
+
+            // 3) ISO 8601 (with or without 'T')
+            if (DateTime.TryParse(dateStr, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AssumeLocal, out result))
+            {
+                return true;
+            }
+
+            return false;
         }
 
 

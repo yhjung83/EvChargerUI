@@ -219,6 +219,9 @@ namespace EvChargerUI.ViewModels
         protected FileLogger _logger = ((App)Application.Current).AppLogger;
 
         protected DispatcherTimer _waitingTimer;
+        private EventHandler _waitingTimerTickHandler;
+        private int _waitingCountdownSessionId = 0;
+        private bool _isStartChargingInProgress = false;
         protected DispatcherTimer _evsisDspTimer;
 
         protected DispatcherTimer _progressTimer;
@@ -1303,7 +1306,23 @@ namespace EvChargerUI.ViewModels
 
         private async void StartCharging(object param)
         {
-            await StartChargingAsync();
+            if (_isStartChargingInProgress)
+            {
+                _logger.Info($"[UI] StartCharging ignored (already in progress). CH={_chargerChannel.ChannelNo}");
+                return;
+            }
+
+            _isStartChargingInProgress = true;
+            _logger.Info($"[UI] StartCharging accepted. CH={_chargerChannel.ChannelNo}, Sequence={CurrentChargeSequence}");
+            try
+            {
+                await StartChargingAsync();
+            }
+            finally
+            {
+                _isStartChargingInProgress = false;
+                _logger.Info($"[UI] StartCharging completed. CH={_chargerChannel.ChannelNo}, Sequence={CurrentChargeSequence}");
+            }
         }
 
         private async Task StartChargingAsync()
@@ -1412,35 +1431,56 @@ namespace EvChargerUI.ViewModels
             catch (Exception ex)
             {
                 _logger.Error("[UI] StartChargingAsync() Error: " + ex.Message);
-                _waitingTimer?.Stop();
-                _waitingTimer = null;
+                DisposeWaitingChargeCountdownTimer();
+                unchecked { _waitingCountdownSessionId++; }
                 InitializeCharger(null);
                 return;
             }
         }
 
-        private void StartWaitingChargeCountdown(Stopwatch stopwatch, int timeoutSeconds)
+        private void StartWaitingChargeCountdown(Stopwatch stopwatch, int timeoutSeconds, int sessionId)
         {
             WaitingChargeRemainSeconds = timeoutSeconds;
             WaitingChargeDisplaySeconds = timeoutSeconds;
 
-            _waitingTimer = null;
-            _waitingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(0.5) };
-            _waitingTimer.Tick += (s, e) =>
+            DisposeWaitingChargeCountdownTimer();
+
+            _logger.Info($"[WaitCountdown] start. CH={_chargerChannel.ChannelNo}, Session={sessionId}, Timeout={timeoutSeconds}s, Count={WaitingChargeDisplaySeconds}");
+
+            int lastLoggedRemain = -1;
+            _waitingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _waitingTimerTickHandler = (s, e) =>
             {
+                if (sessionId != _waitingCountdownSessionId)
+                    return;
+
                 int elapsed = (int)stopwatch.Elapsed.TotalSeconds;
                 int remain = Math.Max(0, timeoutSeconds - elapsed);
                 WaitingChargeRemainSeconds = remain;
                 WaitingChargeDisplaySeconds = remain;
+
+                if (remain != lastLoggedRemain)
+                {
+                    _logger.Info($"[WaitCountdown] tick. CH={_chargerChannel.ChannelNo}, Session={sessionId}, Count={remain}");
+                    lastLoggedRemain = remain;
+                }
             };
+            _waitingTimer.Tick += _waitingTimerTickHandler;
             _waitingTimer.Start();
         }
 
-        private void StopWaitingChargeCountdown(Stopwatch stopwatch)
+        private void StopWaitingChargeCountdown(Stopwatch stopwatch, int sessionId)
         {
-            _waitingTimer?.Stop();
-            _waitingTimer = null;
             stopwatch?.Stop();
+
+            if (sessionId != _waitingCountdownSessionId)
+            {
+                _logger.Info($"[WaitCountdown] stop skipped (stale session). CH={_chargerChannel.ChannelNo}, Session={sessionId}, CurrentSession={_waitingCountdownSessionId}");
+                return;
+            }
+
+            _logger.Info($"[WaitCountdown] stop. CH={_chargerChannel.ChannelNo}, Session={sessionId}, Remain={WaitingChargeDisplaySeconds}s");
+            DisposeWaitingChargeCountdownTimer();
         }
 
         private async Task<bool> WaitForChargingStartWithPopupAsync(int timeoutSeconds, int loopDelayMs, bool retryStartCommandInLoop)
@@ -1448,52 +1488,66 @@ namespace EvChargerUI.ViewModels
             _parentViewModel.WaitingChargeStartPopup(this);
             DisposeReadyToChargingTimer();
 
-            var stopwatch = Stopwatch.StartNew();
-            StartWaitingChargeCountdown(stopwatch, timeoutSeconds);
+            int sessionId = unchecked(++_waitingCountdownSessionId);
+            _logger.Info($"[WaitCountdown] wait loop start. CH={_chargerChannel.ChannelNo}, Session={sessionId}, RetryStart={retryStartCommandInLoop}, LoopDelayMs={loopDelayMs}, Count={WaitingChargeDisplaySeconds}");
 
-            while (!_charger.CheckChargingStart(_chargerChannel.ChannelNo)
-                   && stopwatch.Elapsed.TotalSeconds < timeoutSeconds
-                   && WaitingChargeDisplaySeconds > 0)
+            var stopwatch = Stopwatch.StartNew();
+            StartWaitingChargeCountdown(stopwatch, timeoutSeconds, sessionId);
+
+            try
             {
-                if (_chargerChannel.IsWaitForConnectorPlugInCancelled)
+                while (!_charger.CheckChargingStart(_chargerChannel.ChannelNo)
+                       && stopwatch.Elapsed.TotalSeconds < timeoutSeconds)
                 {
-                    StopWaitingChargeCountdown(stopwatch);
+                    if (_chargerChannel.IsWaitForConnectorPlugInCancelled)
+                    {
+                        _logger.Info($"[WaitCountdown] cancelled before charging-start check complete. CH={_chargerChannel.ChannelNo}, Session={sessionId}, Count={WaitingChargeDisplaySeconds}");
+                        StopWaitingChargeCountdown(stopwatch, sessionId);
+                        _parentViewModel.ClosePopup();
+                        _parentViewModel.ConnectorErrorPopup(this);
+                        InitializeCharger(null);
+                        return false;
+                    }
+
+                    _logger.Info("StartCharging in while loop");
+                    if (retryStartCommandInLoop)
+                    {
+                        _charger.StartCharging(_chargerChannel.ChannelNo);
+                    }
+
+                    await Task.Delay(loopDelayMs);
+
+                    if (_chargerChannel.IsWaitForConnectorPlugInCancelled)
+                    {
+                        _logger.Info($"[WaitCountdown] cancelled after delay. CH={_chargerChannel.ChannelNo}, Session={sessionId}, Count={WaitingChargeDisplaySeconds}");
+                        StopWaitingChargeCountdown(stopwatch, sessionId);
+                        _parentViewModel.ClosePopup();
+                        InitializeCharger(null);
+                        return false;
+                    }
+                }
+
+                StopWaitingChargeCountdown(stopwatch, sessionId);
+
+                if (stopwatch.Elapsed.TotalSeconds >= timeoutSeconds)
+                {
+                    _logger.Warn($"[WaitCountdown] timeout. CH={_chargerChannel.ChannelNo}, Session={sessionId}, ElapsedSec={stopwatch.Elapsed.TotalSeconds:F1}, Count={WaitingChargeDisplaySeconds}");
+                    InitializeCharger(null);
+                    await Task.Delay(200);
                     _parentViewModel.ClosePopup();
                     _parentViewModel.ConnectorErrorPopup(this);
-                    InitializeCharger(null);
                     return false;
                 }
 
-                _logger.Info("StartCharging in while loop");
-                if (retryStartCommandInLoop)
-                {
-                    _charger.StartCharging(_chargerChannel.ChannelNo);
-                }
-
-                await Task.Delay(loopDelayMs);
-
-                if (_chargerChannel.IsWaitForConnectorPlugInCancelled)
-                {
-                    StopWaitingChargeCountdown(stopwatch);
-                    _parentViewModel.ClosePopup();
-                    InitializeCharger(null);
-                    return false;
-                }
-            }
-
-            StopWaitingChargeCountdown(stopwatch);
-
-            if (stopwatch.Elapsed.TotalSeconds >= timeoutSeconds || WaitingChargeDisplaySeconds <= 0)
-            {
-                InitializeCharger(null);
-                await Task.Delay(200);
+                _logger.Info($"[WaitCountdown] charging-start detected. CH={_chargerChannel.ChannelNo}, Session={sessionId}, ElapsedSec={stopwatch.Elapsed.TotalSeconds:F1}, Count={WaitingChargeDisplaySeconds}");
                 _parentViewModel.ClosePopup();
-                _parentViewModel.ConnectorErrorPopup(this);
-                return false;
+                return true;
             }
-
-            _parentViewModel.ClosePopup();
-            return true;
+            finally
+            {
+                _logger.Info($"[WaitCountdown] wait loop end. CH={_chargerChannel.ChannelNo}, Session={sessionId}, Count={WaitingChargeDisplaySeconds}");
+                StopWaitingChargeCountdown(stopwatch, sessionId);
+            }
         }
 
         private async void CompleteCharging(object param, int chargeEndType = 0)
@@ -1636,8 +1690,8 @@ namespace EvChargerUI.ViewModels
             Debug.WriteLine("InitializeCharger");
 
             // 충전 시작 대기 모달(WaitingChargingStart) 등이 떠 있는 상태에서 초기화만 되고 팝업이 남는 경우 제거
-            _waitingTimer?.Stop();
-            _waitingTimer = null;
+            DisposeWaitingChargeCountdownTimer();
+            unchecked { _waitingCountdownSessionId++; }
             if (closePopup)
                 _parentViewModel.ClosePopup();
 
@@ -2155,6 +2209,22 @@ namespace EvChargerUI.ViewModels
             }
         }
 
+        private void DisposeWaitingChargeCountdownTimer()
+        {
+            if (_waitingTimer != null)
+            {
+                if (_waitingTimerTickHandler != null)
+                {
+                    _waitingTimer.Tick -= _waitingTimerTickHandler;
+                    _waitingTimerTickHandler = null;
+                }
+
+                _waitingTimer.Stop();
+                _waitingTimer = null;
+                _logger.Info($"[WaitCountdown] timer disposed. CH={_chargerChannel.ChannelNo}, CurrentSession={_waitingCountdownSessionId}");
+            }
+        }
+
 
         private async void LoadReservationCount()
         {
@@ -2641,8 +2711,8 @@ namespace EvChargerUI.ViewModels
             _evsisRequestStartCharging = false;
 
             // UI 타이머/팝업 정리
-            _waitingTimer?.Stop();
-            _waitingTimer = null;
+            DisposeWaitingChargeCountdownTimer();
+            unchecked { _waitingCountdownSessionId++; }
             _parentViewModel.ClosePopup();
 
             try
