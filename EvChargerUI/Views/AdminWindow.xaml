@@ -23,7 +23,7 @@
             <ColumnDefinition Width="728"/>
             <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Row="1" Grid.Column="1">
+        <Grid Grid.Row="1" Grid.Column="1" MouseLeftButtonDown="TitleBarGrid_MouseLeftButtonDown">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="236"/>
                 <ColumnDefinition Width="8"/>

@@ -11,7 +11,7 @@ namespace EvChargerUI.Services
 {
     public class SystemSettingsService : ISystemSettingsService
     {
-        private readonly FileLogger _logger = ((App)Application.Current).AppLogger;
+        private readonly FileLogger _logger = (Application.Current as App)?.AppLogger;
         #region Windows API - Audio (Core Audio)
 
         [ComImport]
@@ -175,6 +175,27 @@ namespace EvChargerUI.Services
 
         #endregion
 
+        #region Windows API - Taskbar (User32)
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr FindWindowEx(IntPtr hWndParent, IntPtr hWndChildAfter, string lpszClass, string lpszWindow);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool EnableWindow(IntPtr hWnd, [MarshalAs(UnmanagedType.Bool)] bool bEnable);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        private const int SW_HIDE = 0;
+        private const int SW_SHOW = 5;
+
+        #endregion
+
         private readonly DaylightService _daylightService;
 
         public SystemSettingsService()
@@ -245,6 +266,90 @@ namespace EvChargerUI.Services
             catch (Exception ex)
             {
                 _logger.Info($"[SystemSettings] Error setting volume: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 작업표시줄 활성/비활성 설정
+        /// true: 표시 + 활성, false: 숨김 + 비활성
+        /// </summary>
+        /// <param name="isEnabled">true: 활성화(표시), false: 비활성화(숨김)</param>
+        /// <returns>성공 여부</returns>
+        public bool SetTaskbarEnabled(bool isEnabled)
+        {
+            try
+            {
+#if DEBUG
+                if (!isEnabled)
+                {
+                    _logger?.Info("[SystemSettings] Debug build - skipping taskbar disable request.");
+                    return true;
+                }
+#endif
+
+                // 주/보조 모니터 작업표시줄 핸들 획득
+                List<IntPtr> taskbarHandles = new List<IntPtr>();
+
+                IntPtr primaryTaskbar = FindWindow("Shell_TrayWnd", null);
+                if (primaryTaskbar != IntPtr.Zero)
+                {
+                    taskbarHandles.Add(primaryTaskbar);
+                }
+
+                IntPtr secondaryTaskbar = IntPtr.Zero;
+                while (true)
+                {
+                    secondaryTaskbar = FindWindowEx(IntPtr.Zero, secondaryTaskbar, "Shell_SecondaryTrayWnd", null);
+                    if (secondaryTaskbar == IntPtr.Zero)
+                        break;
+
+                    taskbarHandles.Add(secondaryTaskbar);
+                }
+
+                if (taskbarHandles.Count == 0)
+                {
+                    _logger?.Warn("[SystemSettings] Taskbar windows not found (Shell_TrayWnd/Shell_SecondaryTrayWnd)");
+                    return false;
+                }
+
+                bool allSuccess = true;
+                foreach (IntPtr taskbarHandle in taskbarHandles)
+                {
+                    bool success;
+                    if (isEnabled)
+                    {
+                        // 활성화 시: 표시 후 입력 활성
+                        bool showOk = ShowWindow(taskbarHandle, SW_SHOW);
+                        bool enableOk = EnableWindow(taskbarHandle, true);
+                        success = showOk && enableOk;
+                    }
+                    else
+                    {
+                        // 비활성화 시: 입력 비활성 후 숨김
+                        bool disableOk = EnableWindow(taskbarHandle, false);
+                        bool hideOk = ShowWindow(taskbarHandle, SW_HIDE);
+                        success = disableOk && hideOk;
+                    }
+
+                    if (!success)
+                    {
+                        int error = Marshal.GetLastWin32Error();
+                        _logger?.Warn($"[SystemSettings] Failed to set taskbar state. Handle={taskbarHandle}, Win32Error={error}, RequestedEnabled={isEnabled}");
+                        allSuccess = false;
+                    }
+                }
+
+                if (allSuccess)
+                {
+                    _logger?.Info($"[SystemSettings] Taskbar set to: {(isEnabled ? "Enabled+Visible" : "Disabled+Hidden")}, Count={taskbarHandles.Count}");
+                }
+
+                return allSuccess;
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error($"[SystemSettings] Error setting taskbar state: {ex.Message}");
                 return false;
             }
         }
@@ -361,16 +466,16 @@ namespace EvChargerUI.Services
                 if (!success)
                 {
                     int error = Marshal.GetLastWin32Error();
-                    _logger.Warn($"[TIME_SYNC] Failed to set system time. Win32Error={error}");
+                    _logger.Warn($"[TIME_SYNC] 시스템 시간 설정 실패. Win32 오류코드={error}");
                     return false;
                 }
 
-                _logger.Info($"[TIME_SYNC] Windows system time synchronized successfully. Server={serverTime:yyyy-MM-dd HH:mm:ss}");
+                _logger.Info($"[TIME_SYNC] Windows 시스템 시간 동기화 성공. 서버시각={serverTime:yyyy-MM-dd HH:mm:ss}");
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.Error($"[TIME_SYNC] Exception during SetSystemTime: {ex.Message}");
+                _logger.Error($"[TIME_SYNC] SetSystemTime 처리 중 예외 발생: {ex.Message}");
                 return false;
             }
         }

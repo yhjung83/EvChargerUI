@@ -27,7 +27,8 @@
                     <RowDefinition Height="26*"/>
                 </Grid.RowDefinitions>
                 <Viewbox Grid.Row="1">
-                    <controls:LetterSpacingTextBlock Style="{StaticResource  PopupTitleStyle}" Text="점검중"/>
+                    <controls:LetterSpacingTextBlock Style="{StaticResource  PopupTitleStyle}"
+                                                     Text="{Binding MaintenancePopupTitle}"/>
                 </Viewbox>
                 <Grid Grid.Row="3">
                     <Grid.ColumnDefinitions>
@@ -40,7 +41,7 @@
                 </Grid>
                 <Viewbox Grid.Row="5">
                     <controls:LetterSpacingTextBlock Style="{StaticResource  PopupContentStyle}">
-                        충전기 점검중입니다.
+                        <Run Text="{Binding MaintenancePopupMessage}"/>
                         <LineBreak/>
                         관리자 또는 콜센터 전화번호로 연락주세요.
                     </controls:LetterSpacingTextBlock>

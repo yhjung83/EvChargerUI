@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -71,6 +72,7 @@ namespace EvChargerUI.ViewModels
         private bool _isHomeInitializeClickLocked = false;
         private DateTime _lastHomeInitializeAt = DateTime.MinValue;
         private static readonly TimeSpan _homeInitializeDebounce = TimeSpan.FromMilliseconds(700);
+        private int _initializeVersion = 0;
 
         /// <summary>
         /// 듀얼 채널 선택 소유권 획득 시도.
@@ -268,7 +270,11 @@ namespace EvChargerUI.ViewModels
 
         public UserControl CurrentView { get { return _currentView; } 
             set { 
+                var previousViewType = _currentView?.GetType().Name ?? "null";
+                var nextViewType = value?.GetType().Name ?? "null";
+
                 _currentView = value;
+                _logger.Info($"[UI] View changed. CH={_chargerChannel?.ChannelNo}, Sequence={CurrentChargeSequence}, {previousViewType} -> {nextViewType}");
                 OnPropertyChanged(nameof(CurrentView));
             }
         }
@@ -1016,24 +1022,22 @@ namespace EvChargerUI.ViewModels
         {
             var now = DateTime.UtcNow;
 
-            if (_isHomeInitializeClickLocked || (now - _lastHomeInitializeAt) < _homeInitializeDebounce)
+            if (_isHomeInitializeClickLocked)
             {
-                _logger.Info($"[HomeInitialize] ignored - CH{_chargerChannel.ChannelNo}");
+                _logger.Info($"[HomeInitialize] ignored-inprogress - CH{_chargerChannel.ChannelNo}");
+                return;
+            }
+
+            if ((now - _lastHomeInitializeAt) < _homeInitializeDebounce)
+            {
+                _logger.Info($"[HomeInitialize] ignored-debounce - CH{_chargerChannel.ChannelNo}");
                 return;
             }
 
             _isHomeInitializeClickLocked = true;
             _lastHomeInitializeAt = now;
-
-            try
-            {
-                IsHomeButtonEnabled = false;
-                InitializeCharger(param);
-            }
-            finally
-            {
-                _isHomeInitializeClickLocked = false;
-            }
+            IsHomeButtonEnabled = false;
+            InitializeCharger(param, closePopup: true, invokedByHome: true);
         }
 
         private void RefreshChargerSequence()
@@ -1685,15 +1689,21 @@ namespace EvChargerUI.ViewModels
             }
         }
 
-        private async void InitializeCharger(object param, bool closePopup = true)
+        private async void InitializeCharger(object param, bool closePopup = true, bool invokedByHome = false)
         {
-            Debug.WriteLine("InitializeCharger");
+            int initializeVersion = Interlocked.Increment(ref _initializeVersion);
+            Debug.WriteLine($"InitializeCharger v{initializeVersion}");
 
-            // 충전 시작 대기 모달(WaitingChargingStart) 등이 떠 있는 상태에서 초기화만 되고 팝업이 남는 경우 제거
-            DisposeWaitingChargeCountdownTimer();
-            unchecked { _waitingCountdownSessionId++; }
-            if (closePopup)
-                _parentViewModel.ClosePopup();
+            try
+            {
+                bool shouldKeepConnectorWaitCancelled = false;
+
+                // 충전 시작 대기 모달(WaitingChargingStart) 등이 떠 있는 상태에서 초기화만 되고 팝업이 남는 경우 제거
+                DisposeWaitingChargeCountdownTimer();
+                unchecked { _waitingCountdownSessionId++; }
+                _isStartChargingInProgress = false;
+                if (closePopup)
+                    _parentViewModel.ClosePopup();
 
             // EVSIS 전용 로직 추가
             if (AppSettingsManager.ChargerSettings.ChargerManufacturerCode == "evsis")
@@ -1705,9 +1715,11 @@ namespace EvChargerUI.ViewModels
             // 상태 확인을 먼저 하고 타이머는 나중에 정리
             if (CurrentChargeSequence == ChargeSequence.PlugConnector)
             {
+                shouldKeepConnectorWaitCancelled = true;
+
                 // 타이머 정리 (상태 확인 후)
                 DisposeReadyToChargingTimer();
-                
+
                 _logger.Info($"[InitializeCharger] Channel {_chargerChannel.ChannelNo}: Home button pressed during PlugConnector state");
 
                 // WaitForConnectorPlugIn 비동기 작업 취소
@@ -1769,20 +1781,58 @@ namespace EvChargerUI.ViewModels
                 _charger.StopChargingold2(_chargerChannel.ChannelNo);
                 _charger.InitCharger(_chargerChannel.ChannelNo);
                 _chargerChannel.Init();
+                if (shouldKeepConnectorWaitCancelled)
+                {
+                    _chargerChannel.IsWaitForConnectorPlugInCancelled = true;
+                }
                 _charger.InitStandby2(_chargerChannel.ChannelNo);
             }
             else 
             {
                 _chargerChannel.Init();
+                if (shouldKeepConnectorWaitCancelled)
+                {
+                    _chargerChannel.IsWaitForConnectorPlugInCancelled = true;
+                }
             }
             // 커넥터 타입 속성 업데이트 알림
             OnPropertyChanged(nameof(ConnectorTypeIcon));
             OnPropertyChanged(nameof(ConnectorTypeText));
 
+            if (initializeVersion != _initializeVersion)
+            {
+                _logger.Info($"[InitializeCharger] stale-result skipped before UI apply. CH={_chargerChannel.ChannelNo}, version={initializeVersion}, latest={_initializeVersion}");
+                return;
+            }
+
             string phoneNo = null;
             string reservationNo = null;
-            if (!_isReservationAuth && _charger.SendGetResvStation(_chargerChannel.ChannelNo, out phoneNo, out reservationNo))
+            bool hasReservation = false;
+
+            if (!_isReservationAuth)
             {
+                var reservationTask = Task.Run(() => _charger.SendGetResvStation(_chargerChannel.ChannelNo, out phoneNo, out reservationNo));
+                var timeoutTask = Task.Delay(TimeSpan.FromSeconds(3));
+                var completedTask = await Task.WhenAny(reservationTask, timeoutTask);
+
+                if (completedTask == reservationTask)
+                {
+                    hasReservation = reservationTask.Result;
+                }
+                else
+                {
+                    _logger.Warn($"[InitializeCharger] SendGetResvStation timeout (3s). CH={_chargerChannel.ChannelNo}");
+                }
+            }
+
+            if (!_isReservationAuth && hasReservation)
+            {
+                if (initializeVersion != _initializeVersion)
+                {
+                    _logger.Info($"[InitializeCharger] stale-result skipped in reservation branch. CH={_chargerChannel.ChannelNo}, version={initializeVersion}, latest={_initializeVersion}");
+                    return;
+                }
+
                 if (string.IsNullOrEmpty(_chargerChannel.ReservationPhoneNo)
                     || string.IsNullOrEmpty(_chargerChannel.ReservationNo)
                     || !_chargerChannel.IsReservationSmsSent)
@@ -1808,6 +1858,12 @@ namespace EvChargerUI.ViewModels
             }
             else
             {
+                if (initializeVersion != _initializeVersion)
+                {
+                    _logger.Info($"[InitializeCharger] stale-result skipped in select-connector branch. CH={_chargerChannel.ChannelNo}, version={initializeVersion}, latest={_initializeVersion}");
+                    return;
+                }
+
                 _logger.Info($"[DualChannel][CH{_chargerChannel.ChannelNo}] InitializeCharger → SelectConnector 전환, 소유권 해제");
                 ReleaseDualChannelSelectOwnership();
                 CurrentChargeSequence = ChargeSequence.SelectConnector;
@@ -1818,6 +1874,14 @@ namespace EvChargerUI.ViewModels
                 if (_isEnterCouplerPage)
                 {
                     SoundService.Instance.PlaySoundAsync("select_coupler.wav");
+                }
+            }
+            }
+            finally
+            {
+                if (invokedByHome)
+                {
+                    _isHomeInitializeClickLocked = false;
                 }
             }
         }

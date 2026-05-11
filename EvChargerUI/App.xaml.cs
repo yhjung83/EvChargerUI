@@ -71,6 +71,18 @@ namespace EvChargerUI
                 maxRollFiles: 0
             );
 
+            // 5. 작업표시줄 비활성화 설정 적용 (시작 시)
+            try
+            {
+                var systemSettingsService = new SystemSettingsService();
+                bool taskbarDisabled = systemSettingsService.SetTaskbarEnabled(false);
+                AppLogger.Info($"[Startup] Taskbar disabled on application startup: {taskbarDisabled}");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error($"[Startup] Failed to disable taskbar on startup: {ex.Message}");
+            }
+
             // 기존 실행 중인 프로세스 종료
             Process currentProcess = Process.GetCurrentProcess();
             string processName = currentProcess.ProcessName;
@@ -158,6 +170,17 @@ namespace EvChargerUI
             {
                 AdminWindow.Close();
                 AdminWindow = null;
+            }
+
+            try
+            {
+                var systemSettingsService = new SystemSettingsService();
+                bool taskbarEnabled = systemSettingsService.SetTaskbarEnabled(true);
+                AppLogger?.Info($"[App] Taskbar enabled when exiting admin mode: {taskbarEnabled}");
+            }
+            catch (Exception ex)
+            {
+                AppLogger?.Error($"[App] Failed to enable taskbar when exiting admin mode: {ex.Message}");
             }
 
         }
@@ -345,6 +368,24 @@ namespace EvChargerUI
                 AppLogger = null;
             }
 
+            // 작업표시줄 복원 (안전장치)
+            try
+            {
+                var systemSettingsService = new SystemSettingsService();
+                bool taskbarRestored = systemSettingsService.SetTaskbarEnabled(true);
+                if (AppLogger != null)
+                {
+                    AppLogger.Info($"[Exit] Taskbar restored on application exit: {taskbarRestored}");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (AppLogger != null)
+                {
+                    AppLogger.Error($"[Exit] Failed to restore taskbar on exit: {ex.Message}");
+                }
+            }
+
             base.OnExit(e);
         }
 
@@ -355,6 +396,15 @@ namespace EvChargerUI
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
+            AppLogger?.Fatal($"[CRASH-UI-DISPATCHER] Unhandled exception on UI thread");
+            AppLogger?.Fatal($"[CRASH-UI-DISPATCHER] Exception Type: {e.Exception?.GetType().Name ?? "Unknown"}");
+            AppLogger?.Fatal($"[CRASH-UI-DISPATCHER] Message: {e.Exception?.Message ?? "No message"}");
+            AppLogger?.Fatal($"[CRASH-UI-DISPATCHER] StackTrace: {e.Exception?.StackTrace ?? "No stack trace"}");
+            if (e.Exception?.InnerException != null)
+            {
+                AppLogger?.Fatal($"[CRASH-UI-DISPATCHER] InnerException: {e.Exception.InnerException.Message}");
+                AppLogger?.Fatal($"[CRASH-UI-DISPATCHER] InnerException StackTrace: {e.Exception.InnerException.StackTrace}");
+            }
             LogAndExit(e.Exception);
         }
 
@@ -363,7 +413,18 @@ namespace EvChargerUI
         /// </summary>
         private void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
         {
-            LogAndExit(e.ExceptionObject as Exception);
+            Exception ex = e.ExceptionObject as Exception;
+            AppLogger?.Fatal($"[CRASH-APPDOMAIN] Unhandled exception in background thread/AppDomain");
+            AppLogger?.Fatal($"[CRASH-APPDOMAIN] Exception Type: {ex?.GetType().Name ?? "Unknown"}");
+            AppLogger?.Fatal($"[CRASH-APPDOMAIN] Message: {ex?.Message ?? "No message"}");
+            AppLogger?.Fatal($"[CRASH-APPDOMAIN] StackTrace: {ex?.StackTrace ?? "No stack trace"}");
+            if (ex?.InnerException != null)
+            {
+                AppLogger?.Fatal($"[CRASH-APPDOMAIN] InnerException: {ex.InnerException.Message}");
+                AppLogger?.Fatal($"[CRASH-APPDOMAIN] InnerException StackTrace: {ex.InnerException.StackTrace}");
+            }
+            AppLogger?.Fatal($"[CRASH-APPDOMAIN] IsTerminating: {e.IsTerminating}");
+            LogAndExit(ex);
         }
 
         /// <summary>
@@ -372,6 +433,10 @@ namespace EvChargerUI
         private void TaskScheduler_UnobservedTaskException(object sender, System.Threading.Tasks.UnobservedTaskExceptionEventArgs e)
         {
             e.SetObserved();
+            AppLogger?.Fatal($"[CRASH-TASK-UNOBSERVED] Unobserved task exception");
+            AppLogger?.Fatal($"[CRASH-TASK-UNOBSERVED] Exception Type: {e.Exception?.GetType().Name ?? "Unknown"}");
+            AppLogger?.Fatal($"[CRASH-TASK-UNOBSERVED] Message: {e.Exception?.InnerException?.Message ?? e.Exception?.Message ?? "No message"}");
+            AppLogger?.Fatal($"[CRASH-TASK-UNOBSERVED] StackTrace: {e.Exception?.InnerException?.StackTrace ?? e.Exception?.StackTrace ?? "No stack trace"}");
             LogAndExit(e.Exception);
         }
 
@@ -387,9 +452,10 @@ namespace EvChargerUI
 
                 if (AppLogger != null)
                 {
+                    AppLogger.Fatal($"[FATAL] Application terminating due to unhandled exception");
                     AppLogger.Error("Program Error", ex);
                     // 비동기 큐 기반 로거이므로 백그라운드 워커가 큐를 처리할 시간 확보
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                     AppLogger.Flush();
                     AppLogger.Dispose();
                     AppLogger = null;
@@ -402,9 +468,10 @@ namespace EvChargerUI
                     DspLogger = null;
                 }
             }
-            catch
+            catch (Exception logEx)
             {
-                // 로깅 자체 실패 시 무시
+                // 로깅 자체 실패 시도 무시
+                System.Diagnostics.Debug.WriteLine($"Failed to log exception: {logEx.Message}");
             }
 
             System.Environment.Exit(1);

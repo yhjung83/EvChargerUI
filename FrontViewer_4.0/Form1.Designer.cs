@@ -54,7 +54,7 @@ namespace FrontViewer
             // 
             this.label_Ver.AutoSize = true;
             this.label_Ver.Font = new System.Drawing.Font("맑은 고딕", 12F);
-            this.label_Ver.Location = new System.Drawing.Point(554, 396);
+            this.label_Ver.Location = new System.Drawing.Point(430, 396);
             this.label_Ver.Name = "label_Ver";
             this.label_Ver.Size = new System.Drawing.Size(49, 21);
             this.label_Ver.TabIndex = 1;
@@ -81,7 +81,7 @@ namespace FrontViewer
             this.listView_List.Location = new System.Drawing.Point(118, 102);
             this.listView_List.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.listView_List.Name = "listView_List";
-            this.listView_List.Size = new System.Drawing.Size(522, 170);
+            this.listView_List.Size = new System.Drawing.Size(485, 170);
             this.listView_List.TabIndex = 3;
             this.listView_List.UseCompatibleStateImageBehavior = false;
             this.listView_List.View = System.Windows.Forms.View.Details;
@@ -109,10 +109,10 @@ namespace FrontViewer
             // button_SAVE
             // 
             this.button_SAVE.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.button_SAVE.Location = new System.Drawing.Point(564, 329);
+            this.button_SAVE.Location = new System.Drawing.Point(19, 376);
             this.button_SAVE.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button_SAVE.Name = "button_SAVE";
-            this.button_SAVE.Size = new System.Drawing.Size(96, 61);
+            this.button_SAVE.Size = new System.Drawing.Size(96, 41);
             this.button_SAVE.TabIndex = 8;
             this.button_SAVE.Text = "저장";
             this.button_SAVE.UseVisualStyleBackColor = true;
@@ -151,12 +151,12 @@ namespace FrontViewer
             // button_Search
             // 
             this.button_Search.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.button_Search.Location = new System.Drawing.Point(646, 102);
+            this.button_Search.Location = new System.Drawing.Point(416, 44);
             this.button_Search.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button_Search.Name = "button_Search";
-            this.button_Search.Size = new System.Drawing.Size(113, 170);
+            this.button_Search.Size = new System.Drawing.Size(187, 53);
             this.button_Search.TabIndex = 13;
-            this.button_Search.Text = "찾기";
+            this.button_Search.Text = "적용 파일 찾기";
             this.button_Search.UseVisualStyleBackColor = true;
             this.button_Search.Click += new System.EventHandler(this.button_Search_Click);
             // 
@@ -177,10 +177,10 @@ namespace FrontViewer
             // button_Play
             // 
             this.button_Play.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.button_Play.Location = new System.Drawing.Point(663, 329);
+            this.button_Play.Location = new System.Drawing.Point(118, 376);
             this.button_Play.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button_Play.Name = "button_Play";
-            this.button_Play.Size = new System.Drawing.Size(96, 61);
+            this.button_Play.Size = new System.Drawing.Size(96, 41);
             this.button_Play.TabIndex = 15;
             this.button_Play.Text = "실행";
             this.button_Play.UseVisualStyleBackColor = true;
@@ -204,7 +204,7 @@ namespace FrontViewer
             this.label_ClickCount.Name = "label_ClickCount";
             this.label_ClickCount.Size = new System.Drawing.Size(157, 21);
             this.label_ClickCount.TabIndex = 16;
-            this.label_ClickCount.Text = "화면터치 횟수(5초) :"; 
+            this.label_ClickCount.Text = "화면터치 횟수(5초) :";
             // 
             // label_ClickCountAddinfo
             // 
@@ -232,7 +232,7 @@ namespace FrontViewer
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.ClientSize = new System.Drawing.Size(762, 422);
+            this.ClientSize = new System.Drawing.Size(607, 422);
             this.Controls.Add(this.label_Notice);
             this.Controls.Add(this.label_ClickCountAddinfo);
             this.Controls.Add(this.textBox_TouchCount);

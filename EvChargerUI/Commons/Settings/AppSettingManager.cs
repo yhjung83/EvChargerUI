@@ -25,6 +25,7 @@ namespace EvChargerUI.Commons.Settings
         public static ChargerOperationSettings ChargerOperationSettings { get; private set; }
 
         public static ChargerTimerSettings ChargerTimerSettings { get; private set; }
+        public static TaskbarSettings TaskbarSettings { get; private set; }
 
         /// <summary>
         /// 설정이 변경되었을 때 발생하는 이벤트
@@ -151,6 +152,7 @@ namespace EvChargerUI.Commons.Settings
             SaveSoundVolumeSettings();
             SaveChargerOperationSettings();
             SaveChargerTimerSettings();
+            SaveTaskbarSettings();
 
             try
             {
@@ -329,6 +331,7 @@ namespace EvChargerUI.Commons.Settings
             CreateDefaultSoundVolumeSettings();
             CreateDefaultChargerOperationSettings();
             CreateDefaultChargerTimerSettings();
+            CreateDefaultTaskbarSettings();
         }
         private static void LoadAllSettingsFromIniData()
         {
@@ -338,6 +341,7 @@ namespace EvChargerUI.Commons.Settings
             LoadSoundVolumeSettings();
             LoadChargerOperationSettings();
             LoadChargerTimerSettings();
+            LoadTaskbarSettings();
         }
 
         private static void BackupSettingsToDb()
@@ -405,7 +409,7 @@ namespace EvChargerUI.Commons.Settings
                 SoundVolumeSettings = soundVolumeSettings;
                 ChargerOperationSettings = chargerOperationSettings;
                 ChargerTimerSettings = chargerTimerSettings;
-                
+
                  _data = new IniData();
                 _logger?.Info("[AppSettingsManager] Successfully restored settings from database.");
                 return true;
@@ -734,6 +738,28 @@ namespace EvChargerUI.Commons.Settings
             _data["ChargerTimerSettings"]["ConnectorErrorPopupViewTimer"] = ChargerTimerSettings.ConnectorErrorPopupViewTimer.ToString();
             _data["ChargerTimerSettings"]["HelpPopupViewTimer"] = ChargerTimerSettings.HelpPopupViewTimer.ToString();
             _data["ChargerTimerSettings"]["CreditCardReceiptPopupViewTimer"] = ChargerTimerSettings.CreditCardReceiptPopupViewTimer.ToString();
+        }
+
+        #endregion
+
+        #region TaskbarSettings
+        private static void CreateDefaultTaskbarSettings()
+        {
+            TaskbarSettings = new TaskbarSettings { IsEnabled = false };
+        }
+
+        private static void LoadTaskbarSettings()
+        {
+            TaskbarSettings = new TaskbarSettings
+            {
+                IsEnabled = GetBoolValue("TaskbarSettings", "IsEnabled", false)
+            };
+        }
+
+        private static void SaveTaskbarSettings()
+        {
+            EnsureSectionAndKey("TaskbarSettings", "IsEnabled", TaskbarSettings.IsEnabled.ToString());
+            _data["TaskbarSettings"]["IsEnabled"] = TaskbarSettings.IsEnabled.ToString();
         }
 
         #endregion

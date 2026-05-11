@@ -45,17 +45,19 @@ namespace WinWatchDogApp
             this.flowLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel.Location = new System.Drawing.Point(0, 0);
+            this.flowLayoutPanel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.flowLayoutPanel.Name = "flowLayoutPanel";
-            this.flowLayoutPanel.Size = new System.Drawing.Size(780, 368);
+            this.flowLayoutPanel.Size = new System.Drawing.Size(891, 460);
             this.flowLayoutPanel.TabIndex = 0;
             // 
             // button_Save
             // 
             this.button_Save.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.button_Save.Font = new System.Drawing.Font("굴림", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.button_Save.Location = new System.Drawing.Point(0, 368);
+            this.button_Save.Location = new System.Drawing.Point(0, 460);
+            this.button_Save.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.button_Save.Name = "button_Save";
-            this.button_Save.Size = new System.Drawing.Size(1080, 50);
+            this.button_Save.Size = new System.Drawing.Size(1234, 62);
             this.button_Save.TabIndex = 1;
             this.button_Save.Text = "SAVE";
             this.button_Save.UseVisualStyleBackColor = true;
@@ -64,6 +66,7 @@ namespace WinWatchDogApp
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -73,8 +76,9 @@ namespace WinWatchDogApp
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.groupBox_Notice);
-            this.splitContainer1.Size = new System.Drawing.Size(1080, 368);
-            this.splitContainer1.SplitterDistance = 780;
+            this.splitContainer1.Size = new System.Drawing.Size(1234, 460);
+            this.splitContainer1.SplitterDistance = 891;
+            this.splitContainer1.SplitterWidth = 5;
             this.splitContainer1.TabIndex = 2;
             // 
             // groupBox_Notice
@@ -83,8 +87,10 @@ namespace WinWatchDogApp
             this.groupBox_Notice.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox_Notice.Font = new System.Drawing.Font("굴림", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.groupBox_Notice.Location = new System.Drawing.Point(0, 0);
+            this.groupBox_Notice.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.groupBox_Notice.Name = "groupBox_Notice";
-            this.groupBox_Notice.Size = new System.Drawing.Size(296, 368);
+            this.groupBox_Notice.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.groupBox_Notice.Size = new System.Drawing.Size(338, 460);
             this.groupBox_Notice.TabIndex = 0;
             this.groupBox_Notice.TabStop = false;
             this.groupBox_Notice.Text = "Notice";
@@ -92,24 +98,24 @@ namespace WinWatchDogApp
             // label_Notice
             // 
             this.label_Notice.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label_Notice.Location = new System.Drawing.Point(3, 22);
+            this.label_Notice.Location = new System.Drawing.Point(3, 27);
             this.label_Notice.Name = "label_Notice";
-            this.label_Notice.Size = new System.Drawing.Size(290, 343);
+            this.label_Notice.Size = new System.Drawing.Size(332, 429);
             this.label_Notice.TabIndex = 0;
             this.label_Notice.Text = "Notice content goes here.";
             // 
             // Watchdog
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.ClientSize = new System.Drawing.Size(1080, 418);
+            this.ClientSize = new System.Drawing.Size(1234, 522);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.button_Save);
+            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.MaximizeBox = false;
             this.Name = "Watchdog";
             this.Text = "WatchDog";
-            this.ControlBox = true;
-            this.MaximizeBox = false;            
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();

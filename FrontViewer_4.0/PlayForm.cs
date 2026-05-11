@@ -93,19 +93,23 @@ namespace FrontViewer
         {
             try
             {
-                Image image = Image.FromFile(imagePath);
+                Image newImage = Image.FromFile(imagePath);
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(new Action(() => 
+                    this.Invoke(new Action(() =>
                     {
-                        this.ClientSize = image.Size;
-                        pictureBox1.Image = image;
+                        Image oldImage = pictureBox1.Image;
+                        this.ClientSize = newImage.Size;
+                        pictureBox1.Image = newImage;
+                        oldImage?.Dispose();
                     }));
                 }
                 else
                 {
-                    this.ClientSize = image.Size;
-                    pictureBox1.Image = image;
+                    Image oldImage = pictureBox1.Image;
+                    this.ClientSize = newImage.Size;
+                    pictureBox1.Image = newImage;
+                    oldImage?.Dispose();
                 }
             }
             catch (Exception ex)
@@ -117,6 +121,12 @@ namespace FrontViewer
         private void PlayForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             imageTimer.Stop();
+
+            // 마지막으로 표시 중인 이미지의 파일 핸들 해제
+            Image lastImage = pictureBox1.Image;
+            pictureBox1.Image = null;
+            lastImage?.Dispose();
+
             parentForm.Show();
         }
     }

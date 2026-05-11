@@ -1,6 +1,7 @@
 using EvChargerUI.Commons.Controls;
 using EvChargerUI.Commons.Enum;
 using EvChargerUI.Commons.Settings;
+using EvChargerUI.Commons.Util;
 using EvChargerUI.Models;
 using EvChargerUI.Services;
 using EvChargerUI.Services.FaultHandling;
@@ -82,6 +83,9 @@ namespace EvChargerUI.ViewModels
         private bool _alarmRaisedByErrorPopup = false;
         private string _lastPopupAlarmCode = "0000";
         private bool _keepErrorPopupUntilFaultClears = false;
+        private string _maintenancePopupTitle = "점검중";
+        private string _maintenancePopupMessage = "충전기 점검중입니다.";
+        private readonly FileLogger _logger = ((App)Application.Current).AppLogger;
 
         private string _chargerFirmwareVersion;
         public string ChargerFirmwareVersion
@@ -113,6 +117,26 @@ namespace EvChargerUI.ViewModels
             {
                 _errorCodeText = value;
                 OnPropertyChanged(nameof(ErrorCodeText));
+            }
+        }
+
+        public string MaintenancePopupTitle
+        {
+            get => _maintenancePopupTitle;
+            set
+            {
+                _maintenancePopupTitle = value;
+                OnPropertyChanged(nameof(MaintenancePopupTitle));
+            }
+        }
+
+        public string MaintenancePopupMessage
+        {
+            get => _maintenancePopupMessage;
+            set
+            {
+                _maintenancePopupMessage = value;
+                OnPropertyChanged(nameof(MaintenancePopupMessage));
             }
         }
 
@@ -538,7 +562,11 @@ namespace EvChargerUI.ViewModels
             get { return _popupView; }
             set
             {
+                var previousPopupType = _popupView?.GetType().Name ?? "null";
+                var nextPopupType = value?.GetType().Name ?? "null";
+
                 _popupView = value;
+                _logger.Info($"[UI] Popup changed: {previousPopupType} -> {nextPopupType}, IsDimmed={_isDimmed}, PopupType={_popupType}");
                 OnPropertyChanged(nameof(PopupView));
                 OnPropertyChanged(nameof(IsErrorPopupActive));
                 OnPropertyChanged(nameof(IsBottomButtonsEnabled));
@@ -988,19 +1016,43 @@ namespace EvChargerUI.ViewModels
                 ErrorCodeText = $" Error code {errcodeText}";
         }
 
+        private void UpdateMaintenancePopupText()
+        {
+            int evseStatus = AppSettingsManager.EvCommSettings.EVSE_Status;
+
+            if (evseStatus == 2)
+            {
+                MaintenancePopupTitle = "운영중지";
+                MaintenancePopupMessage = "충전기 운영중지입니다.";
+            }
+            else
+            {
+                MaintenancePopupTitle = "점검중";
+                MaintenancePopupMessage = "충전기 점검중입니다.";
+            }
+        }
+
         public void ShowMaintenancePopup(bool isVisible)
         {
             if (isVisible)
             {
-                // 이미 점검중 모달이 표시되어 있으면 무시
+                UpdateMaintenancePopupText();
+
+                // 이미 점검중 모달이 표시되어 있으면 텍스트만 갱신
                 if (PopupView is EVSE_CheckView)
                 {
+                    if (PopupView.DataContext != this)
+                    {
+                        PopupView.DataContext = this;
+                    }
+
                     return;
                 }
-                
+
                 // 점검중 팝업은 타이머를 절대 시작하지 않음 (중요 상태 팝업)
                 DisposePopupTimer(); // 기존 타이머가 있다면 명시적으로 중지
                 PopupView = new EVSE_CheckView();
+                PopupView.DataContext = this;
                 PopupType = PopupSizeType.Small;
                 IsDimmed = true;
             }

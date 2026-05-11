@@ -14,7 +14,7 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -52,6 +52,12 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="INIFileParser, Version=2.5.2.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
@@ -126,6 +132,7 @@
     <Compile Include="Commons\Settings\DisplayBrightnessSettings.cs" />
     <Compile Include="Commons\Settings\EvCommSettings.cs" />
     <Compile Include="Commons\Settings\SoundVolumeSettings.cs" />
+    <Compile Include="Commons\Settings\TaskbarSettings.cs" />
     <Compile Include="Commons\Util\FileLogger.cs" />
     <Compile Include="Commons\Util\DebugTraceListener.cs" />
     <Compile Include="Commons\Util\MoneyUtil.cs" />
@@ -224,6 +231,7 @@
     <Compile Include="Services\TechleaderPaymentService.cs" />
     <Compile Include="Services\TL3600.cs" />
     <Compile Include="Services\TL3600Pkt.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="ViewModels\AdminViewModel.cs" />
     <Compile Include="ViewModels\ChargeInputPopupViewModel.cs" />
     <Compile Include="ViewModels\ChargerViewModel.cs" />
@@ -765,6 +773,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <None Include="packages.config" />
+    <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -772,16 +781,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FrontViewer_4.0\FrontViewer_4.0.csproj">
-      <Project>{e2e3f4e5-e6e7-48e9-a0ea-1b2c3d4e5f6a}</Project>
-      <Name>FrontViewer_4.0</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WinWatchDogApp\WinWatchDogApp.csproj">
-      <Project>{5058ad8d-714f-417a-bbf7-5ed3f7441ba3}</Project>
-      <Name>WinWatchDogApp</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\arrow.png" />

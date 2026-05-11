@@ -48,5 +48,5 @@ using System.Windows;
 //      빌드 번호
 //      수정 버전
 //
-[assembly: AssemblyVersion("1.0.1.50")]
-[assembly: AssemblyFileVersion("1.0.1.50")]
+[assembly: AssemblyVersion("1.0.1.51")]
+[assembly: AssemblyFileVersion("1.0.1.51")]

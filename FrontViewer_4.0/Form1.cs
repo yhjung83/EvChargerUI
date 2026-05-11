@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -12,12 +13,13 @@ namespace FrontViewer
 {
     public partial class Main_Form : Form
     {
+        private static readonly object logLock = new object();
         private Timer updateTimer;
         public Main_Form()
         {
             InitializeComponent();
             LoadSetting();
-            
+
             // Initialize and start the 5-second polling timer
             updateTimer = new Timer();
             updateTimer.Interval = 5000; // 5 seconds
@@ -27,10 +29,34 @@ namespace FrontViewer
             this.Shown += new System.EventHandler(this.Main_Form_Shown);
         }
 
+        private void WriteLog(string message)
+        {
+            try
+            {
+                string logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+                Directory.CreateDirectory(logDirectory);
+
+                string logFilePath = Path.Combine(logDirectory, string.Format("FrontViewer_{0:yyyy-MM-dd}.log", DateTime.Now));
+                string logLine = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] {1}{2}", DateTime.Now, message, Environment.NewLine);
+
+                lock (logLock)
+                {
+                    File.AppendAllText(logFilePath, logLine, Encoding.UTF8);
+                }
+            }
+            catch
+            {
+            }
+        }
+
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
             string updateFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateFrontFile");
-            if (Directory.Exists(updateFolderPath))
+            string updateZipPath = Path.Combine(updateFolderPath, "image_update.zip");
+
+            bool hasUpdateZip = File.Exists(updateZipPath);
+
+            if (hasUpdateZip)
             {
                 updateTimer.Stop(); // Stop polling during the update process.
 
@@ -44,13 +70,30 @@ namespace FrontViewer
                     formClosedHandler = (s, args) =>
                     {
                         // Now that the form is closed, we can safely update the files.
-                        UpdateImagesFromFolder(updateFolderPath);
-
-                        // Re-start the timer.
-                        if (!updateTimer.Enabled)
+                        // 처리 완료 후 타이머 재시작
+                        System.Threading.Tasks.Task.Run(async () =>
                         {
-                            updateTimer.Start();
-                        }
+                            await UpdateImagesFromFolderAsync(updateFolderPath);
+
+                            // UI 스레드에서 타이머 재시작
+                            if (this.InvokeRequired)
+                            {
+                                this.Invoke(new Action(() =>
+                                {
+                                    if (!updateTimer.Enabled)
+                                    {
+                                        updateTimer.Start();
+                                    }
+                                }));
+                            }
+                            else
+                            {
+                                if (!updateTimer.Enabled)
+                                {
+                                    updateTimer.Start();
+                                }
+                            }
+                        });
 
                         // Detach the event handler to prevent memory leaks.
                         if (s is Form closedForm)
@@ -65,11 +108,40 @@ namespace FrontViewer
                 else
                 {
                     // No slideshow is running, so we can update immediately.
-                    UpdateImagesFromFolder(updateFolderPath);
-                    if (!updateTimer.Enabled)
+                    // 처리 완료 후 playform/타이머 재시작
+                    System.Threading.Tasks.Task.Run(async () =>
                     {
-                        updateTimer.Start(); // Re-start the timer.
-                    }
+                        await UpdateImagesFromFolderAsync(updateFolderPath);
+
+                        // openPlayForm == null 이더라도 PlayForm 재시작 보장
+                        if (this.InvokeRequired)
+                        {
+                            this.Invoke(new Action(() =>
+                            {
+                                if (!Application.OpenForms.OfType<PlayForm>().Any())
+                                {
+                                    button_Play.PerformClick();
+                                }
+
+                                if (!updateTimer.Enabled)
+                                {
+                                    updateTimer.Start();
+                                }
+                            }));
+                        }
+                        else
+                        {
+                            if (!Application.OpenForms.OfType<PlayForm>().Any())
+                            {
+                                button_Play.PerformClick();
+                            }
+
+                            if (!updateTimer.Enabled)
+                            {
+                                updateTimer.Start();
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -84,10 +156,10 @@ namespace FrontViewer
 
         private void LoadSetting()
         {
-            string Version = "Ver: "; 
+            string Version = "Ver: ";
             label_Ver.Text = Version + "1.0.1" + "   " + "Frame 4.0";
 
-            string basePath = AppDomain.CurrentDomain.BaseDirectory + "FViewerSetting.ini"; 
+            string basePath = AppDomain.CurrentDomain.BaseDirectory + "FViewerSetting.ini";
             //string settingPath = Path.Combine(basePath, "Set", "FViewerSetting.ini");
             IniFile ini = new IniFile(basePath);
 
@@ -188,12 +260,22 @@ namespace FrontViewer
 
         private void button_Search_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            string defaultPath = label_SelectedPath.Text;
+            if (string.IsNullOrWhiteSpace(defaultPath) || !Directory.Exists(defaultPath))
             {
-                string selectedPath = folderBrowserDialog.SelectedPath;
-                label_SelectedPath.Text = selectedPath;
-                LoadImageFiles(selectedPath);
+                defaultPath = AppDomain.CurrentDomain.BaseDirectory;
+            }
+
+            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+            {
+                folderBrowserDialog.SelectedPath = defaultPath;
+
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string selectedPath = folderBrowserDialog.SelectedPath;
+                    label_SelectedPath.Text = selectedPath;
+                    LoadImageFiles(selectedPath);
+                }
             }
         }
 
@@ -266,6 +348,169 @@ namespace FrontViewer
             }
         }
 
+        private async System.Threading.Tasks.Task UpdateImagesFromFolderAsync(string updateFolderPath)
+        {
+            try
+            {
+                // 업데이트 폴더가 없으면 종료
+                if (!Directory.Exists(updateFolderPath))
+                {
+                    WriteLog("업데이트 폴더가 존재하지 않습니다: " + updateFolderPath);
+                    return;
+                }
+
+                // The calling method ensures PlayForm is closed.
+                // Now, let's aggressively ask the GC to release underlying file handles.
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                string destinationPath = label_SelectedPath.Text;
+
+                if (!Directory.Exists(destinationPath))
+                {
+                    Directory.CreateDirectory(destinationPath);
+                }
+
+                string[] imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+
+                // 0. zip 파일이 있으면 압축 해제
+                string[] zipFiles = Directory.GetFiles(updateFolderPath, "*.zip", SearchOption.TopDirectoryOnly);
+                foreach (string zipPath in zipFiles)
+                {
+                    string zipEscaped = zipPath.Replace("'", "''");
+                    string updateFolderEscaped = updateFolderPath.Replace("'", "''");
+
+                    using (Process proc = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"Expand-Archive -LiteralPath '{zipEscaped}' -DestinationPath '{updateFolderEscaped}' -Force\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    }))
+                    {
+                        proc.WaitForExit();
+                        if (proc.ExitCode != 0)
+                        {
+                            throw new Exception("zip 압축 해제에 실패했습니다: " + Path.GetFileName(zipPath));
+                        }
+                    }
+
+                    WriteLog("zip 압축 해제 완료: " + Path.GetFileName(zipPath));
+
+                    // 압축 해제 후 zip 파일 삭제
+                    File.Delete(zipPath);
+                }
+
+                // 1. 업데이트 폴더(압축 해제 포함)에서 이미지 후보 수집
+                var candidateImageFiles = Directory.EnumerateFiles(updateFolderPath, "*.*", SearchOption.AllDirectories)
+                    .Where(f => imageExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                    .ToList();
+                WriteLog("이미지 후보 파일 수: " + candidateImageFiles.Count);
+
+                // 2. 이미지 유효성 체크 (실제 로드 가능한 파일만)
+                var validImageFiles = new List<string>();
+                foreach (string file in candidateImageFiles)
+                {
+                    try
+                    {
+                        using (var img = Image.FromFile(file))
+                        {
+                            // 로드 성공 시 유효 이미지
+                        }
+
+                        validImageFiles.Add(file);
+                    }
+                    catch (Exception imageEx)
+                    {
+                        WriteLog("유효하지 않은 이미지 파일 건너뜀: " + file + " - " + imageEx.Message);
+                    }
+                }
+                WriteLog("유효한 이미지 파일 수: " + validImageFiles.Count);
+
+                if (validImageFiles.Count == 0)
+                {
+                    WriteLog("유효한 이미지 파일이 없습니다.");
+                    try { Directory.Delete(updateFolderPath, true); } catch { }
+
+                    // 기존 이미지로 playform 재시작 (실패해도 진행)
+                    try
+                    {
+                        if (this.InvokeRequired)
+                            this.Invoke(new Action(() => button_Play.PerformClick()));
+                        else
+                            button_Play.PerformClick();
+                    }
+                    catch (Exception playEx)
+                    {
+                        WriteLog("PlayForm 재시작 중 오류가 발생했습니다: " + playEx.Message);
+                    }
+
+                    return;
+                }
+
+                // 3. Delete existing files in the destination path
+                DirectoryInfo di = new DirectoryInfo(destinationPath);
+                foreach (FileInfo file in di.GetFiles())
+                {
+                    file.Delete();
+                }
+
+                // 4. Copy valid files from update folder
+                foreach (string sourceFile in validImageFiles)
+                {
+                    string temppath = Path.Combine(destinationPath, Path.GetFileName(sourceFile));
+                    File.Copy(sourceFile, temppath, true);
+                }
+
+                // 5. Delete the update folder
+                try
+                {
+                    Directory.Delete(updateFolderPath, true);
+                    WriteLog("업데이트 폴더 삭제 완료: " + updateFolderPath);
+                }
+                catch (Exception delEx)
+                {
+                    WriteLog("업데이트 폴더 삭제 실패: " + delEx.Message);
+                }
+
+                // 6. Refresh the list view
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() => LoadImageFiles(destinationPath)));
+                }
+                else
+                {
+                    LoadImageFiles(destinationPath);
+                }
+
+                // 7. playform 재시작 (실패해도 진행)
+                try
+                {
+                    if (this.InvokeRequired)
+                    {
+                        this.Invoke(new Action(() => button_Play.PerformClick()));
+                    }
+                    else
+                    {
+                        button_Play.PerformClick();
+                    }
+                }
+                catch (Exception playEx)
+                {
+                    WriteLog("PlayForm 재시작 중 오류가 발생했습니다: " + playEx.Message);
+                }
+
+                // Log success message
+                WriteLog("Image files updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                WriteLog("이미지 업데이트 중 오류가 발생했습니다: " + ex.ToString());
+            }
+
+        }
+
         private void UpdateImagesFromFolder(string updateFolderPath)
         {
             try
@@ -282,25 +527,84 @@ namespace FrontViewer
                     Directory.CreateDirectory(destinationPath);
                 }
 
-                // 1. Delete existing files in the destination path
+                string[] imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+
+                // 0. zip 파일이 있으면 압축 해제
+                string[] zipFiles = Directory.GetFiles(updateFolderPath, "*.zip", SearchOption.TopDirectoryOnly);
+                foreach (string zipPath in zipFiles)
+                {
+                    string zipEscaped = zipPath.Replace("'", "''");
+                    string updateFolderEscaped = updateFolderPath.Replace("'", "''");
+
+                    using (Process proc = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"Expand-Archive -LiteralPath '{zipEscaped}' -DestinationPath '{updateFolderEscaped}' -Force\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    }))
+                    {
+                        proc.WaitForExit();
+                        if (proc.ExitCode != 0)
+                        {
+                            throw new Exception("zip 압축 해제에 실패했습니다: " + Path.GetFileName(zipPath));
+                        }
+                    }
+
+                    // 압축 해제 후 zip 파일 삭제
+                    File.Delete(zipPath);
+                }
+
+                // 1. 업데이트 폴더(압축 해제 포함)에서 이미지 후보 수집
+                var candidateImageFiles = Directory.EnumerateFiles(updateFolderPath, "*.*", SearchOption.AllDirectories)
+                    .Where(f => imageExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                    .ToList();
+
+                // 2. 이미지 유효성 체크 (실제 로드 가능한 파일만)
+                var validImageFiles = new List<string>();
+                foreach (string file in candidateImageFiles)
+                {
+                    try
+                    {
+                        using (var img = Image.FromFile(file))
+                        {
+                            // 로드 성공 시 유효 이미지
+                        }
+
+                        validImageFiles.Add(file);
+                    }
+                    catch
+                    {
+                        // Invalid image skip
+                    }
+                }
+
+                if (validImageFiles.Count == 0)
+                {
+                    WriteLog("유효한 이미지 파일이 없습니다.");
+                    //Directory.Delete(updateFolderPath, true);
+                    return;
+                }
+
+                // 3. Delete existing files in the destination path
                 DirectoryInfo di = new DirectoryInfo(destinationPath);
                 foreach (FileInfo file in di.GetFiles())
                 {
                     file.Delete();
                 }
 
-                // 2. Copy new files from update folder
-                DirectoryInfo sourceDi = new DirectoryInfo(updateFolderPath);
-                foreach (FileInfo file in sourceDi.GetFiles())
+                // 4. Copy valid files from update folder
+                foreach (string sourceFile in validImageFiles)
                 {
-                    string temppath = Path.Combine(destinationPath, file.Name);
-                    file.CopyTo(temppath, true);
+                    string temppath = Path.Combine(destinationPath, Path.GetFileName(sourceFile));
+                    File.Copy(sourceFile, temppath, true);
                 }
 
-                // 3. Delete the update folder
-                Directory.Delete(updateFolderPath, true);
+                // 5. Delete the update folder
+                //Directory.Delete(updateFolderPath, true);
 
-                // 4. Refresh the list view
+                // 6. Refresh the list view
                 if (this.InvokeRequired)
                 {
                     this.Invoke(new Action(() => LoadImageFiles(destinationPath)));
@@ -310,20 +614,24 @@ namespace FrontViewer
                     LoadImageFiles(destinationPath);
                 }
 
-                // 5. playform 재시작
-                button_Play.PerformClick();
+                // 7. playform 재시작 (실패해도 진행)
+                try
+                {
+                    button_Play.PerformClick();
+                }
+                catch (Exception playEx)
+                {
+                    WriteLog("PlayForm 재시작 중 오류가 발생했습니다: " + playEx.Message);
+                }
 
                 // Log success message
-
-
-                Console.WriteLine("Image files updated successfully.");
+                WriteLog("Image files updated successfully.");
             }
             catch (Exception ex)
             {
-                // Using Console.WriteLine to avoid halting the timer on repeated errors.
-                Console.WriteLine("이미지 업데이트 중 오류가 발생했습니다: " + ex.Message);
+                WriteLog("이미지 업데이트 중 오류가 발생했습니다: " + ex.ToString());
             }
-            
+
         }
     }
 

@@ -44,7 +44,7 @@ namespace EvChargerUI.Services
         private FileLogger _logger = ((App)Application.Current).AppLogger;
 
         private bool _isServerConnected;
-        private bool _isTimeSyncedOnStartup = false; // 프로그램 시작 시 1회만 시간 동기화하기 위한 플래그
+        private volatile bool _isTimeSyncedOnStartup = false; // 프로그램 시작 시 1회만 시간 동기화하기 위한 플래그
         
         /// <summary>
         /// 서버와의 통신 연결 상태
@@ -87,43 +87,71 @@ namespace EvChargerUI.Services
 
         public EvCommService(string serverUrl, IEvCommToChargerDelegate chargerDelegate)
         {
-            //EvComm.ResponseData.clientUrl = "http://192.168.1.10:5050/";
-            EvComm.ResponseData.clientUrl = AppSettingsManager.EvCommSettings.ClientBaseUrl;
-            _logger.Error("EvComm.ResponseData.clientUrl: "+ EvComm.ResponseData.clientUrl);
-
-            // offline queue 준비
-            _dbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "evcharger.db");
-            var sqlite = new EvChargerUI.Services.Database.SqliteService(_dbPath);
-            sqlite.Initialize();
-            _txRepo = new EvChargerUI.Services.Database.OfflineTxRepository(sqlite);
-
-            _evCommForm = new EvCommForm(serverUrl, (addUrl, stationId, chargerId, json, success) =>
+            try
             {
-                try
+                _logger.Info("[EvCommService] *** Initialization START ***");
+                _logger.Info($"[EvCommService] Server URL Parameter: {serverUrl}");
+
+                //EvComm.ResponseData.clientUrl = "http://192.168.1.10:5050/";
+                string settingsUrl = AppSettingsManager.EvCommSettings.ClientBaseUrl;
+                _logger.Info($"[EvCommService] ClientBaseUrl from Settings: {settingsUrl}");
+
+                EvComm.ResponseData.clientUrl = settingsUrl;
+                _logger.Info($"[EvCommService] EvComm.ResponseData.clientUrl assigned: {EvComm.ResponseData.clientUrl}");
+
+                // offline queue 준비
+                _dbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "evcharger.db");
+                _logger.Info($"[EvCommService] Database path: {_dbPath}");
+
+                var sqlite = new EvChargerUI.Services.Database.SqliteService(_dbPath);
+                sqlite.Initialize();
+                _logger.Info("[EvCommService] SQLite initialized successfully");
+
+                _txRepo = new EvChargerUI.Services.Database.OfflineTxRepository(sqlite);
+                _logger.Info("[EvCommService] OfflineTxRepository created successfully");
+
+                _evCommForm = new EvCommForm(serverUrl, (addUrl, stationId, chargerId, json, success) =>
                 {
-                    string type = InferMessageType(addUrl);
-                    string status = (success && IsServerConnected) ? "sent" : "pending";
-                    _txRepo.Insert(type, addUrl, stationId ?? string.Empty, chargerId, json, status);
-                }
-                catch (Exception ex)
+                    try
+                    {
+                        string type = InferMessageType(addUrl);
+                        string status = (success && IsServerConnected) ? "sent" : "pending";
+                        _txRepo.Insert(type, addUrl, stationId ?? string.Empty, chargerId, json, status);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"[EvCommService] Database insert failed: {ex.Message}");
+                    }
+                });
+                _logger.Info("[EvCommService] EvCommForm created successfully");
+
+                _systemSettingsService = new SystemSettingsService();
+
+                _chargerDelegate = chargerDelegate;
+
+                _retryTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
+                _retryTimer.Tick += (s, e) => _ = RetryPendingAsync(); // 비동기 실행 (fire-and-forget)
+                _retryTimer.Start();
+                _logger.Info("[EvCommService] RetryTimer started (15 seconds interval)");
+
+                _purgeTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromHours(24) };//삭제 타이머
+                _purgeTimer.Tick += (s, e) =>
                 {
-                    _logger.Error($"[EvCommService] Database insert failed: {ex.Message}");
-                }
-            });
-            _systemSettingsService = new SystemSettingsService();
+                    try { _txRepo.PurgeOlderThanDays(60); } catch { }
+                };
+                _purgeTimer.Start();
+                _logger.Info("[EvCommService] PurgeTimer started (24 hours interval)");
 
-            _chargerDelegate = chargerDelegate;
-
-            _retryTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
-            _retryTimer.Tick += (s, e) => _ = RetryPendingAsync(); // 비동기 실행 (fire-and-forget)
-            _retryTimer.Start();
-
-            _purgeTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromHours(24) };//삭제 타이머
-            _purgeTimer.Tick += (s, e) =>
+                _logger.Info("[EvCommService] *** Initialization COMPLETE ***");
+            }
+            catch (Exception ex)
             {
-                try { _txRepo.PurgeOlderThanDays(60); } catch { }
-            };
-            _purgeTimer.Start();
+                _logger.Fatal("[EvCommService] *** INITIALIZATION FAILED ***");
+                _logger.Fatal($"[EvCommService] Exception Type: {ex.GetType().Name}");
+                _logger.Fatal($"[EvCommService] Message: {ex.Message}");
+                _logger.Fatal($"[EvCommService] StackTrace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         private string InferMessageType(string addUrl)
@@ -147,9 +175,13 @@ namespace EvChargerUI.Services
                 _logger.Debug("[RetryPendingAsync] Already retrying, skipping this cycle");
                 return;
             }
-            
-            if (!IsServerConnected) return;
-            
+
+            if (!IsServerConnected)
+            {
+                _logger.Debug("[RetryPendingAsync] Server not connected, skipping retry");
+                return;
+            }
+
             // 모든 채널이 유휴 상태일 때만 재전송 수행
             try
             {
@@ -163,6 +195,7 @@ namespace EvChargerUI.Services
                         if (ch.CurrentSequence != ChargeSequence.SelectConnector)
                         {
                             // 채널 중 하나라도 유휴가 아니면 이번 주기에는 재전송하지 않음
+                            _logger.Debug($"[RetryPendingAsync] Channel busy, skipping retry cycle. Sequence: {ch.CurrentSequence}");
                             return;
                         }
                     }
@@ -170,13 +203,15 @@ namespace EvChargerUI.Services
             }
             catch (Exception ex)
             {
-                _logger.Error($"[RetryPendingAsync 1] {ex.Message}");
+                _logger.Error($"[RetryPendingAsync] Error checking channel status: {ex.Message}");
+                _logger.Debug($"[RetryPendingAsync] StackTrace: {ex.StackTrace}");
                 return;
             }
-            
+
             // 재시도 시작 플래그 설정
             _isRetrying = true;
-            
+            _logger.Debug("[RetryPendingAsync] Starting retry cycle");
+
             try
             {
                 // 백그라운드 스레드에서 HTTP 요청 및 DB 작업 수행하여 UI 블로킹 방지
@@ -184,11 +219,16 @@ namespace EvChargerUI.Services
                 {
                     try
                     {
-                        foreach (var row in _txRepo.GetPending(20))
+                        var pendingList = _txRepo.GetPending(20);
+                        _logger.Debug($"[RetryPendingAsync] Found {pendingList.Count()} pending transactions to retry");
+
+                        foreach (var row in pendingList)
                         {
                             // addUrl은 "station/.../" 형태이어야 함
                             string delimiter = row.MessageType.ToUpperInvariant();
-                            
+
+                            _logger.Debug($"[RetryPendingAsync] Attempting retry for: URL={row.AddUrl}, Type={row.MessageType}");
+
                             // HTTP 요청을 백그라운드에서 실행 (동기 메서드를 Task.Run으로 래핑)
                             var res = await Task.Run(() => _evCommForm.httpPostResponse(
                                 request: TrimJsonBraces(row.RequestJson),
@@ -198,34 +238,42 @@ namespace EvChargerUI.Services
                                 delimiter: delimiter,
                                 timeout: 5000));
 
-                            _logger.Info($"[RetrySEND] URL : {row.AddUrl} stationId:{row.StationId}, chargerId:{row.ChargerId}, Data: {row.RequestJson}");
+                            _logger.Info($"[RetrySEND] URL: {row.AddUrl} stationId:{row.StationId}, chargerId:{row.ChargerId}, Data: {row.RequestJson}");
 
                             if (res != null)
                             {
                                 _txRepo.MarkSent(row.Id);
-                                _logger.Info($"[RetrySUCCESS] URL : {row.AddUrl} stationId:{row.StationId}, chargerId:{row.ChargerId}, Data: {row.RequestJson}");
-
+                                _logger.Info($"[RetrySUCCESS] URL: {row.AddUrl} stationId:{row.StationId}, chargerId:{row.ChargerId}");
                             }
                             else
                             {
                                 _txRepo.BumpRetry(row.Id);
-                                _logger.Error($"[RetryFAILED] URL : {row.AddUrl} stationId:{row.StationId}, chargerId:{row.ChargerId}, Data: {row.RequestJson}");
+                                _logger.Error($"[RetryFAILED] URL: {row.AddUrl} stationId:{row.StationId}, chargerId:{row.ChargerId}");
                             }
 
                             // 각 요청 후 짧은 지연 (비동기로 변경하여 UI 블로킹 방지)
-                            await Task.Delay(500); // 200ms
+                            await Task.Delay(500); // 500ms
                         }
+
+                        _logger.Debug("[RetryPendingAsync] Retry cycle completed");
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error($"[RetryPendingAsync 2] {ex.Message}");
+                        _logger.Error($"[RetryPendingAsync] Exception during retry execution: {ex.Message}");
+                        _logger.Error($"[RetryPendingAsync] StackTrace: {ex.StackTrace}");
                     }
                 }).ConfigureAwait(false); // UI 스레드로 돌아올 필요 없음
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"[RetryPendingAsync] Unhandled exception in retry task: {ex.Message}");
+                _logger.Error($"[RetryPendingAsync] StackTrace: {ex.StackTrace}");
             }
             finally
             {
                 // 재시도 완료 후 플래그 해제
                 _isRetrying = false;
+                _logger.Debug("[RetryPendingAsync] Retry cycle flag released");
             }
         }
 
@@ -241,58 +289,75 @@ namespace EvChargerUI.Services
 
         public void Open()
         {
-            ResponseServer responseServer = _evCommForm.GetResponseServer();
-            responseServer.OpenServer(_evCommForm);
-            responseServer.GetInstanceServerReset().DataSendEventReset = new DataGetEventHandler(this.CallBackResponseDataReset);
-            responseServer.GetInstanceServerPrices().DataSendEventPrices = new DataGetEventHandler(this.CallBackResponseDataPrices);
-            responseServer.GetInstanceServerDisplayBrightness().DataSendEventDisplayBrightness = new DataGetEventHandler(this.CallBackResponseDataDisplayBrightness);
-            responseServer.GetInstanceServerSound().DataSendEventSound = new DataGetEventHandler(this.CallBackResponseDataSound);
-            responseServer.GetInstanceServerUpdate().DataSendEventUpdate = new DataGetEventHandler(this.CallBackResponseDataUpdate);
-            responseServer.GetInstanceServerStatus().DataSendEventStatus = new DataGetEventHandler(this.CallBackResponseDataStatus);
-            responseServer.GetInstanceServerCheckStatus().DataSendEventCheckStatus = new DataGetEventHandler(this.CallBackResponseDataCheckStatus);
-            responseServer.GetInstanceServerLimit().DataSendEventLimit = new DataGetEventHandler(this.CallBackResponseDataLimit);
-            responseServer.GetInstanceServerTest().DataSendEventTest = new DataGetEventHandler(this.CallBackResponseDataTest);
-            responseServer.GetInstanceServerPayYn().DataSendEventPayYn = new DataGetEventHandler(this.CallBackResponseDataPayYn);
-            responseServer.GetInstanceServerAuth().DataSendEventAuth = new DataGetEventHandler(this.CallBackResponseDataAuth);
-            responseServer.GetInstanceServerStop().DataSendEventStop = new DataGetEventHandler(this.CallBackResponseDataStop);
-            responseServer.GetInstanceServerDump().DataSendEventDump = new DataGetEventHandler(this.CallBackResponseDataDump);
+            try
+            {
+                _logger.Info("[EvCommService.Open] *** Opening communication server ***");
 
-            responseServer.GetInstanceServerReset().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerPrices().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerDisplayBrightness().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerSound().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerUpdate().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerStatus().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerCheckStatus().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerLimit().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerTest().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerPayYn().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerAuth().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerStop().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
-            responseServer.GetInstanceServerDump().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                ResponseServer responseServer = _evCommForm.GetResponseServer();
+                _logger.Info("[EvCommService.Open] ResponseServer obtained");
 
-            _dataSendEventReset += new DataPushEventHandler(responseServer.GetInstanceServerReset().SetResponse);
-            _dataSendEventPrices += new DataPushEventHandler(responseServer.GetInstanceServerPrices().SetResponse);
-            _dataSendEventDisplayBrightness += new DataPushEventHandler(responseServer.GetInstanceServerDisplayBrightness().SetResponse);
-            _dataSendEventSound += new DataPushEventHandler(responseServer.GetInstanceServerSound().SetResponse);
-            _dataSendEventUpdate += new DataPushEventHandler(responseServer.GetInstanceServerUpdate().SetResponse);
-            _dataSendEventStatus += new DataPushEventHandler(responseServer.GetInstanceServerStatus().SetResponse);
-            _dataSendEventCheckStatus += new DataPushEventHandler(responseServer.GetInstanceServerCheckStatus().SetResponse);
-            _dataSendEventLimit += new DataPushEventHandler(responseServer.GetInstanceServerLimit().SetResponse);
-            _dataSendEventTest += new DataPushEventHandler(responseServer.GetInstanceServerTest().SetResponse);
-            _dataSendEventPayYn += new DataPushEventHandler(responseServer.GetInstanceServerPayYn().SetResponse);
-            _dataSendEventAuth += new DataPushEventHandler(responseServer.GetInstanceServerAuth().SetResponse);
-            _dataSendEventStop += new DataPushEventHandler(responseServer.GetInstanceServerStop().SetResponse);
-            _dataSendEventDump += new DataPushEventHandler(responseServer.GetInstanceServerDump().SetResponse);
+                responseServer.OpenServer(_evCommForm);
+                _logger.Info("[EvCommService.Open] OpenServer called");
 
+                responseServer.GetInstanceServerReset().DataSendEventReset = new DataGetEventHandler(this.CallBackResponseDataReset);
+                responseServer.GetInstanceServerPrices().DataSendEventPrices = new DataGetEventHandler(this.CallBackResponseDataPrices);
+                responseServer.GetInstanceServerDisplayBrightness().DataSendEventDisplayBrightness = new DataGetEventHandler(this.CallBackResponseDataDisplayBrightness);
+                responseServer.GetInstanceServerSound().DataSendEventSound = new DataGetEventHandler(this.CallBackResponseDataSound);
+                responseServer.GetInstanceServerUpdate().DataSendEventUpdate = new DataGetEventHandler(this.CallBackResponseDataUpdate);
+                responseServer.GetInstanceServerStatus().DataSendEventStatus = new DataGetEventHandler(this.CallBackResponseDataStatus);
+                responseServer.GetInstanceServerCheckStatus().DataSendEventCheckStatus = new DataGetEventHandler(this.CallBackResponseDataCheckStatus);
+                responseServer.GetInstanceServerLimit().DataSendEventLimit = new DataGetEventHandler(this.CallBackResponseDataLimit);
+                responseServer.GetInstanceServerTest().DataSendEventTest = new DataGetEventHandler(this.CallBackResponseDataTest);
+                responseServer.GetInstanceServerPayYn().DataSendEventPayYn = new DataGetEventHandler(this.CallBackResponseDataPayYn);
+                responseServer.GetInstanceServerAuth().DataSendEventAuth = new DataGetEventHandler(this.CallBackResponseDataAuth);
+                responseServer.GetInstanceServerStop().DataSendEventStop = new DataGetEventHandler(this.CallBackResponseDataStop);
+                responseServer.GetInstanceServerDump().DataSendEventDump = new DataGetEventHandler(this.CallBackResponseDataDump);
+                _logger.Debug("[EvCommService.Open] Data send event handlers registered");
+
+                responseServer.GetInstanceServerReset().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerPrices().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerDisplayBrightness().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerSound().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerUpdate().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerStatus().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerCheckStatus().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerLimit().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerTest().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerPayYn().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerAuth().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerStop().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                responseServer.GetInstanceServerDump().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);
+                _logger.Debug("[EvCommService.Open] Data sent event handlers registered");
+
+                _logger.Info("[EvCommService.Open] *** Communication server opened successfully ***");
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal("[EvCommService.Open] *** FAILED to open communication server ***");
+                _logger.Fatal($"[EvCommService.Open] Exception Type: {ex.GetType().Name}");
+                _logger.Fatal($"[EvCommService.Open] Message: {ex.Message}");
+                _logger.Fatal($"[EvCommService.Open] StackTrace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public void Close()
         {
-            _evCommForm.GetResponseServer().CloseServer();
+            try
+            {
+                _logger.Info("[EvCommService.Close] Closing communication server...");
+                _evCommForm.GetResponseServer().CloseServer();
+                _logger.Info("[EvCommService.Close] Communication server closed successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"[EvCommService.Close] Error closing communication server: {ex.Message}");
+                _logger.Error($"[EvCommService.Close] StackTrace: {ex.StackTrace}");
+            }
         }
 
         #region Callback Method
+
         private void CallBackResponseDataPayYn(string requestJson, HttpListenerContext httpListenerContext)
         {
             string response = "0";
@@ -528,45 +593,56 @@ namespace EvChargerUI.Services
                 ///updater/patch/{충전소ID}/{충전기ID}/{패치ID}               
 
 
-                if (await _chargerDelegate.UpdateUIProgram(stationId, chargerId, verNo, patchFile, md5))
+                bool updateResult = false;
+                string errorCode = null;
+
+                if (string.Equals(verkind, "IM", StringComparison.OrdinalIgnoreCase))
                 {
-                    response = "1";
-                    
-                    // UI 업데이트 성공 시 LastUiUpdateDate 업데이트
-                    try
+                    updateResult = _chargerDelegate.UpdateImageFile(stationId, chargerId, verNo, patchFile, out errorCode);
+                    if (!updateResult)
                     {
-                        string updateDate = DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss");
-                        
-                        // 설정 파일에 직접 저장
-                        AppSettingsManager.EvCommSettings.LastUiUpdateDate = updateDate;
-                        AppSettingsManager.Save();
-                        
-                        // AdminWindow가 열려있다면 ViewModel도 업데이트
-                        var app = Application.Current as App;
-                        if (app?.AdminWindow != null)
-                        {
-                            var adminViewModel = app.AdminWindow.ViewModel;
-                            if (adminViewModel != null)
-                            {
-                                // UI 스레드에서 실행
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    adminViewModel.UpdateUiUpdateDate();
-                                });
-                            }
-                        }
-                        
-                        _logger.Info($"[CallBackResponseDataUpdate] LastUiUpdateDate updated to: {updateDate}");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error($"[CallBackResponseDataUpdate] Failed to update UI update date: {ex.Message}");
+                        _logger.Error($"[CallBackResponseDataUpdate] IM update failed. errorCode: {errorCode}");
                     }
                 }
                 else
                 {
-                    response = "0";
+                    updateResult = await _chargerDelegate.UpdateUIProgram(stationId, chargerId, verNo, patchFile, md5);
+                    if (updateResult)
+                    {
+                        // UI 업데이트 성공 시 LastUiUpdateDate 업데이트
+                        try
+                        {
+                            string updateDate = DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss");
+
+                            // 설정 파일에 직접 저장
+                            AppSettingsManager.EvCommSettings.LastUiUpdateDate = updateDate;
+                            AppSettingsManager.Save();
+
+                            // AdminWindow가 열려있다면 ViewModel도 업데이트
+                            var app = Application.Current as App;
+                            if (app?.AdminWindow != null)
+                            {
+                                var adminViewModel = app.AdminWindow.ViewModel;
+                                if (adminViewModel != null)
+                                {
+                                    // UI 스레드에서 실행
+                                    Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        adminViewModel.UpdateUiUpdateDate();
+                                    });
+                                }
+                            }
+
+                            _logger.Info($"[CallBackResponseDataUpdate] LastUiUpdateDate updated to: {updateDate}");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error($"[CallBackResponseDataUpdate] Failed to update UI update date: {ex.Message}");
+                        }
+                    }
                 }
+
+                response = updateResult ? "1" : "0";
 
             }
             catch (Exception e)
@@ -1643,12 +1719,14 @@ namespace EvChargerUI.Services
 
                 if (responseReceiveOk)
                 {
+                    TrySyncWindowsTimeOnce(retJObject);
+
                     string ret = jSonParser.GetJSonData(retJObject, "ret");
 
                     if (!string.IsNullOrEmpty(ret) && ret.Contains(":"))
                     {
                         string[] retArr = ret.Split(':');
-                    
+
                         phoneNo = retArr[0];    
                         reservationNo = retArr[1];
                         result = true;
@@ -1778,8 +1856,10 @@ namespace EvChargerUI.Services
                 _evCommForm.LogRecvServerComm("RTIMESTATUS", retJObject, DateTime.Now);
                 IsServerConnected = true;
 
-                // 프로그램 시작 시 1회만 시간 동기화 시도
-                TrySyncWindowsTimeOnce(retJObject);
+                // ⚠️ [BUG FIX] RTIMESTATUS 응답에는 response_date 필드가 없음!
+                // 시간 동기화는 response_date가 있는 응답(STATUS, USER 등)에서 수행되어야 함
+                // TrySyncWindowsTimeOnce(retJObject);  // ✗ 제거됨 - 불필요한 경고 로그 제거
+                _logger.Debug("[RTIMESTATUS] response_date 필드 없음 → 시간 동기화 건너뜀");
             }
             else
             {
@@ -1950,24 +2030,32 @@ namespace EvChargerUI.Services
         }
 
         /// <summary>
-        /// 프로그램 시작 시 첫 번째 station/status 응답에서만 1회 시간 동기화 시도
+        /// 프로그램 시작 시 서버 시간이 포함된 첫 번째 응답에서만 1회 시간 동기화 시도
         /// </summary>
         private void TrySyncWindowsTimeOnce(JObject retJObject)
         {
             // 이미 동기화를 시도한 경우 skip
             if (_isTimeSyncedOnStartup)
+            {
+                _logger.Info("[TIME_SYNC] 시작 시 동기화가 이미 실행되었습니다. 건너뜁니다.");
                 return;
+            }
 
-            _isTimeSyncedOnStartup = true; // 중복 실행 방지
+            _logger.Info("[TIME_SYNC] ===== 시간 동기화 시작 (프로그램 시작 시 1회) =====");
 
             try
             {
+                // 파싱 전 로컬 시각 캡처 (파싱 소요 시간 오차 최소화)
+                DateTime localTime = DateTime.Now;
+
                 JSonParser jSonParser = _evCommForm.GetJSonParser();
                 string responseDateStr = jSonParser.GetJSonData(retJObject, "response_date");
 
+                _logger.Info($"[TIME_SYNC] 서버 응답 원본값 (response_date) = '{responseDateStr}'");
+
                 if (string.IsNullOrEmpty(responseDateStr))
                 {
-                    _logger.Warn("[TIME_SYNC] response_date field is null or empty. Skipping time sync.");
+                    _logger.Info("[TIME_SYNC] response_date가 없는 응답입니다. 다음 서버 응답에서 다시 시도합니다.");
                     return;
                 }
 
@@ -1975,36 +2063,46 @@ namespace EvChargerUI.Services
                 DateTime serverTime;
                 if (!TryParseServerDateTime(responseDateStr, out serverTime))
                 {
-                    _logger.Warn($"[TIME_SYNC] Failed to parse response_date: {responseDateStr}. Skipping time sync.");
+                    _logger.Warn($"[TIME_SYNC] response_date 파싱 실패: '{responseDateStr}'. 다음 서버 응답에서 다시 시도합니다.");
                     return;
                 }
 
-                DateTime localTime = DateTime.Now;
-                TimeSpan diff = (serverTime - localTime).Duration();
+                _isTimeSyncedOnStartup = true; // 유효한 서버 시각 확인 후 중복 실행 방지
 
-                _logger.Info($"[TIME_SYNC] Server={serverTime:yyyy-MM-dd HH:mm:ss}, Local={localTime:yyyy-MM-dd HH:mm:ss}, Diff={diff.TotalSeconds:F1}s");
+                _logger.Info($"[TIME_SYNC] 파싱된 서버 시각 = {serverTime:yyyy-MM-dd HH:mm:ss}");
+
+                TimeSpan diff = serverTime - localTime;
+                bool isAhead = diff.TotalSeconds > 0;
+                TimeSpan absDiff = diff.Duration();
+
+                _logger.Info($"[TIME_SYNC] 로컬={localTime:yyyy-MM-dd HH:mm:ss.fff}, 서버={serverTime:yyyy-MM-dd HH:mm:ss}, 차이={absDiff.TotalSeconds:F1}초 ({(isAhead ? "서버가 빠름" : "서버가 느림")})");
 
                 // 5초 이상 차이 나는 경우에만 동기화
-                if (diff.TotalSeconds >= 5.0)
+                if (absDiff.TotalSeconds >= 5.0)
                 {
+                    _logger.Info($"[TIME_SYNC] 차이 5초 이상 → SetSystemTime 호출 중...");
                     bool success = _systemSettingsService.SetSystemTime(serverTime);
                     if (success)
                     {
-                        _logger.Info($"[TIME_SYNC] Windows time synchronized. Before={localTime:yyyy-MM-dd HH:mm:ss}, After={serverTime:yyyy-MM-dd HH:mm:ss}");
+                        _logger.Info($"[TIME_SYNC] ✓ Windows 시간 동기화 완료. 변경 전={localTime:yyyy-MM-dd HH:mm:ss}, 변경 후={serverTime:yyyy-MM-dd HH:mm:ss}");
                     }
                     else
                     {
-                        _logger.Warn($"[TIME_SYNC] SetSystemTime failed. Requires administrator privileges.");
+                        _logger.Warn($"[TIME_SYNC] ✗ SetSystemTime 실패. 관리자 권한을 확인하세요. (Win32 오류코드는 SetSystemTime 로그 참고)");
                     }
                 }
                 else
                 {
-                    _logger.Info($"[TIME_SYNC] Time difference is less than 5 seconds. No sync needed.");
+                    _logger.Info($"[TIME_SYNC] 차이 5초 미만 ({absDiff.TotalSeconds:F1}초). 동기화가 필요하지 않습니다.");
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error($"[TIME_SYNC] Exception during TrySyncWindowsTimeOnce: {ex.Message}");
+                _logger.Error($"[TIME_SYNC] TrySyncWindowsTimeOnce 처리 중 예외 발생: {ex.Message}", ex);
+            }
+            finally
+            {
+                _logger.Info("[TIME_SYNC] ===== 시간 동기화 완료 =====");
             }
         }
 
@@ -2027,9 +2125,13 @@ namespace EvChargerUI.Services
                     int minute = int.Parse(dateStr.Substring(10, 2));
                     int second = int.Parse(dateStr.Substring(12, 2));
                     result = new DateTime(year, month, day, hour, minute, second);
+                    _logger.Info($"[TIME_SYNC] [yyyyMMddHHmmss] 형식으로 파싱 성공: {result:yyyy-MM-dd HH:mm:ss}");
                     return true;
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    _logger.Warn($"[TIME_SYNC] [yyyyMMddHHmmss] 형식 파싱 오류: {ex.Message}, 입력값='{dateStr}'");
+                }
             }
 
             // 2) yyyy-MM-dd HH:mm:ss
@@ -2037,6 +2139,7 @@ namespace EvChargerUI.Services
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.None, out result))
             {
+                _logger.Info($"[TIME_SYNC] [yyyy-MM-dd HH:mm:ss] 형식으로 파싱 성공: {result:yyyy-MM-dd HH:mm:ss}");
                 return true;
             }
 
@@ -2044,9 +2147,11 @@ namespace EvChargerUI.Services
             if (DateTime.TryParse(dateStr, System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.AssumeLocal, out result))
             {
+                _logger.Info($"[TIME_SYNC] [ISO 8601] 형식으로 파싱 성공: {result:yyyy-MM-dd HH:mm:ss}");
                 return true;
             }
 
+            _logger.Warn($"[TIME_SYNC] 모든 날짜 형식 파싱 실패. 입력값='{dateStr}'");
             return false;
         }
 
