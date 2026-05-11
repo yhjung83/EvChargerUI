@@ -316,7 +316,10 @@ namespace EvChargerUI.Services.DspControl
             try
             {
                 RxData data = _dspControl.GetRxData(channel);
-                return data.FaultCode.ToString();
+                ushort fc = data.FaultCode;
+                if (fc >= 10000)
+                    return (fc / 100).ToString();
+                return fc.ToString();
             }
             catch
             {

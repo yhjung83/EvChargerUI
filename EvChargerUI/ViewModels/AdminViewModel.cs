@@ -655,23 +655,28 @@ namespace EvChargerUI.ViewModels
         {
             try
             {
-                string manufacturerCode = AppSettingsManager.ChargerSettings.ChargerManufacturerCode?.ToLowerInvariant();
-                if (manufacturerCode != "evsis")
+                if (MessageBox.Show(
+                        "UI 프로그램을 재시작하시겠습니까?\n[예]를 누르면, UI가 종료 후 다시 실행됩니다.",
+                        "UI 재시작",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question) != MessageBoxResult.Yes)
+                    return;
+
+                string exePath = Process.GetCurrentProcess()?.MainModule?.FileName;
+                if (string.IsNullOrWhiteSpace(exePath))
                 {
-                    _logger.Info($"[Admin] RestartCharger skipped. Manufacturer={manufacturerCode}");
+                    _logger?.Warn("[Admin] UI restart failed. exePath is empty.");
                     return;
                 }
 
-                Charger charger = ((App)Application.Current).Charger;
-                if (charger?.DspControlService == null)
+                Process.Start(new ProcessStartInfo
                 {
-                    _logger.Warn("[Admin] RestartCharger failed. DspControlService is null.");
-                    return;
-                }
+                    FileName = exePath,
+                    UseShellExecute = true,
+                });
+                _logger?.Info($"[Admin] UI restart requested. exePath={exePath}");
 
-                // EVSIS: DSP TX 200번지 11번 비트(boardReset) = 1 전송
-                charger.DspControlService.ResetCharger();
-                _logger.Info("[Admin] EVSIS charger reset command sent. (DSP 200 bit 11 = 1)");
+                Application.Current.Shutdown();
             }
             catch (Exception ex)
             {
