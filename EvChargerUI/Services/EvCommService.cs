@@ -312,6 +312,22 @@ namespace EvChargerUI.Services
                 responseServer.GetInstanceServerAuth().DataSendEventAuth = new DataGetEventHandler(this.CallBackResponseDataAuth);
                 responseServer.GetInstanceServerStop().DataSendEventStop = new DataGetEventHandler(this.CallBackResponseDataStop);
                 responseServer.GetInstanceServerDump().DataSendEventDump = new DataGetEventHandler(this.CallBackResponseDataDump);
+
+                // Initialize local delegate fields to point to HttpAsyncServer.SetResponse
+                _dataSendEventReset = responseServer.GetInstanceServerReset().SetResponse;
+                _dataSendEventPrices = responseServer.GetInstanceServerPrices().SetResponse;
+                _dataSendEventDisplayBrightness = responseServer.GetInstanceServerDisplayBrightness().SetResponse;
+                _dataSendEventSound = responseServer.GetInstanceServerSound().SetResponse;
+                _dataSendEventUpdate = responseServer.GetInstanceServerUpdate().SetResponse;
+                _dataSendEventStatus = responseServer.GetInstanceServerStatus().SetResponse;
+                _dataSendEventCheckStatus = responseServer.GetInstanceServerCheckStatus().SetResponse;
+                _dataSendEventLimit = responseServer.GetInstanceServerLimit().SetResponse;
+                _dataSendEventTest = responseServer.GetInstanceServerTest().SetResponse;
+                _dataSendEventPayYn = responseServer.GetInstanceServerPayYn().SetResponse;
+                _dataSendEventAuth = responseServer.GetInstanceServerAuth().SetResponse;
+                _dataSendEventStop = responseServer.GetInstanceServerStop().SetResponse;
+                _dataSendEventDump = responseServer.GetInstanceServerDump().SetResponse;
+
                 _logger.Debug("[EvCommService.Open] Data send event handlers registered");
 
                 responseServer.GetInstanceServerReset().DataSent += new EvComm.HttpAsyncServer.DataSentEventHandler(this.HandleServerDataSent);

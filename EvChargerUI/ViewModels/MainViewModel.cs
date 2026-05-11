@@ -141,7 +141,7 @@ namespace EvChargerUI.ViewModels
         }
 
         public ICommand HiddenBtnDbClickCommand { get; }
-        private DateTime _lastClickTime = DateTime.MinValue;
+        private DateTime _lastClickTime = DateTime.Now;
         public ICommand PasswordPopupViewConfirmCommand { get;}
         public ICommand PasswordPopupViewCancelCommand { get; }
         public ICommand ReopenPasswordInputPopupCommand { get; }

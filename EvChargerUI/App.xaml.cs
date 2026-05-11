@@ -306,8 +306,20 @@ namespace EvChargerUI
             }
         }
 
+        /// <summary>
+        /// 종료 원인을 로그에 기록한 후 애플리케이션을 종료합니다.
+        /// </summary>
+        /// <param name="reason">종료 원인 설명</param>
+        public void ShutdownWithReason(string reason)
+        {
+            AppLogger?.Info($"[SHUTDOWN] 종료 요청. 원인: {reason}");
+            Shutdown();
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
+            AppLogger?.Info($"[OnExit] 애플리케이션 종료 시작. ExitCode={e.ApplicationExitCode}");
+
             // 프로그램 종료 시 충전 중인 채널의 세션 저장
             if (Charger != null)
             {
@@ -351,7 +363,7 @@ namespace EvChargerUI
                 _debugTraceListener = null;
             }
 
-            AppLogger.Info("EvChargerUI Exit...");
+            AppLogger.Info("[OnExit] EvChargerUI Exit...");
             
             _logManager?.Dispose();
 

@@ -643,7 +643,7 @@ namespace EvChargerUI.ViewModels
 
         private void ExitAdmin(object param)
         {
-            Application.Current.Shutdown();
+            ((App)Application.Current).ShutdownWithReason("Admin: ExitAdmin 버튼 클릭");
         }
 
         private void RunMainUi(object param)
@@ -676,7 +676,7 @@ namespace EvChargerUI.ViewModels
                 });
                 _logger?.Info($"[Admin] UI restart requested. exePath={exePath}");
 
-                Application.Current.Shutdown();
+                ((App)Application.Current).ShutdownWithReason("Admin: RestartCharger 버튼 클릭");
             }
             catch (Exception ex)
             {
