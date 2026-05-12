@@ -36,7 +36,7 @@
                         
                     <Image Grid.Column="1" x:Name="TagRfCardImage"/>
                 </Grid>
-                <Button  Grid.Row="7" Command="{Binding ClosePopupInsertICCardCommand}" IsEnabled="{Binding IsPaymentCancelButtonEnabled}" Style="{StaticResource CancelPopupButtonStyle}"/>
+                <Button  Grid.Row="5" Command="{Binding ClosePopupInsertICCardCommand}" IsEnabled="{Binding IsPaymentCancelButtonEnabled}" Style="{StaticResource CancelPopupButtonStyle}"/>
 
             </Grid>
             
