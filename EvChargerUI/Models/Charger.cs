@@ -2227,6 +2227,14 @@ namespace EvChargerUI.Models
                         _logger.Info($"[충전기] 커넥터 연결 대기 취소 (준비 상태 확인 중). 채널={channelNo}");
                         return;
                     }
+                    // NOTE: 시그넷 동작 확인 필요
+                    // 커넥터가 이미 꽂혀있으면 MCU가 준비완료(8)를 건너뛰고 연결완료(5)로 바로 전이할 수 있음
+                    if (_dspControlService.GetPlugCheckStatus(channelNo))
+                    {
+                        _logger.Info($"[충전기] 커넥터 이미 연결됨 (상태5 감지). 준비 상태 대기 생략. 채널={channelNo}");
+                        return;
+                    }
+                    // NOTE: END
                     await Task.Delay(200);
                 }
 
