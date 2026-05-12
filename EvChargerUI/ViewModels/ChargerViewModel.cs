@@ -2544,9 +2544,6 @@ namespace EvChargerUI.ViewModels
         private async void SelectQRAuth(object param)
         {
             _chargerChannel.PaymentMethod = PaymentMethod.QrCode;
-            _chargerChannel.UserSetChargeAmount = -1;
-            _chargerChannel.PrePaymentInfo = null;
-            UserSetCost = 0;
             _parentViewModel.PopupQrCode(this);
 #if false
             ////test          
@@ -3052,6 +3049,9 @@ namespace EvChargerUI.ViewModels
                     {
                         _chargerChannel.QrTid = args.Tid;
                         _chargerChannel.PaymentMethod = PaymentMethod.QrCode;
+                        _chargerChannel.UserSetChargeAmount = -1;
+                        _chargerChannel.PrePaymentInfo = null;
+                        UserSetCost = 0;
                         _logger.Info($"[OnQrChargingStarted] QrTid set to: {args.Tid}, PaymentMethod set to QrCode");
                     }
                     try
