@@ -1816,6 +1816,8 @@ namespace EvChargerUI.ViewModels
                     _chargerChannel.IsWaitForConnectorPlugInCancelled = true;
                 }
             }
+            // 채널 초기화 후 ViewModel 설정금액 UI도 함께 초기화 (이전 결제 금액이 남는 것 방지)
+            UserSetCost = 0;
             // 커넥터 타입 속성 업데이트 알림
             OnPropertyChanged(nameof(ConnectorTypeIcon));
             OnPropertyChanged(nameof(ConnectorTypeText));
@@ -2542,6 +2544,9 @@ namespace EvChargerUI.ViewModels
         private async void SelectQRAuth(object param)
         {
             _chargerChannel.PaymentMethod = PaymentMethod.QrCode;
+            _chargerChannel.UserSetChargeAmount = -1;
+            _chargerChannel.PrePaymentInfo = null;
+            UserSetCost = 0;
             _parentViewModel.PopupQrCode(this);
 #if false
             ////test          
