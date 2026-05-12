@@ -3017,6 +3017,21 @@ namespace EvChargerUI.ViewModels
                 {
                     _isQrChargingInProgress = true;
                     _logger.Info($"[OnQrChargingStarted] stationId: {args.StationId}, chargerId: {args.ChargerId}, tid: {args.Tid}");
+
+                    // 공지(초기) 화면이 떠있으면 먼저 닫고 진행
+                    if (_parentViewModel.ShowInitView)
+                    {
+                        _logger.Info($"[OnQrChargingStarted] InitView is showing. Closing it before starting charge.");
+                        _parentViewModel.ShowInitView = false;
+                    }
+
+                    // 팝업이 열려있으면 닫고 진행 (QR 팝업 등)
+                    if (_parentViewModel.PopupView != null)
+                    {
+                        _logger.Info($"[OnQrChargingStarted] PopupView is open ({_parentViewModel.PopupView.GetType().Name}). Closing it before starting charge.");
+                        _parentViewModel.ClosePopup();
+                    }
+
                     // QR 결제 시 tid 저장
                     if (!string.IsNullOrEmpty(args.Tid))
                     {
