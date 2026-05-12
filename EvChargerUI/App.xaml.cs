@@ -117,6 +117,9 @@ namespace EvChargerUI
             // 3. Task 내부에서 발생하는 관찰되지 않은 예외 처리 (비동기 처리 시)
             System.Threading.Tasks.TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
+            AppLogger.Info("");
+            AppLogger.Info("");
+            AppLogger.Info("--------------------------------------------------------");
             AppLogger.Info("EvChargerUI Start...");
 
             // 로그 관리자 시작

@@ -197,12 +197,15 @@ namespace EvChargerUI.Services.DspControl.Klinelex
 #endif
         private void WriteRegister(TxData data)
         {
+            var client = _modbus;
+            if (client == null) return;
+
             try
             {
                 data.RunCount = _RunCount++;
                 ushort[] rawData = data.ToRawData();
 
-                if (!_modbus.SendFc16(1, _writeAddress[data.ChannelNo], 10, rawData))
+                if (!client.SendFc16(1, _writeAddress[data.ChannelNo], 10, rawData))
                 {
                     IsConnected = false;
                     return;
@@ -210,7 +213,7 @@ namespace EvChargerUI.Services.DspControl.Klinelex
                 Thread.Sleep(200);
                 byte[] idnum = new byte[2];
                 ushort[] values = new ushort[10];
-                if (!_modbus.ResponseF4F16(ref values, ref idnum))
+                if (!client.ResponseF4F16(ref values, ref idnum))
                 {
                     IsConnected = false;
                     return;

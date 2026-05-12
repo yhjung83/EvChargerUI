@@ -2206,13 +2206,13 @@ namespace EvChargerUI.Models
             bool initialFault = _dspControlService.GetFaultStatus(channelNo);
             bool startBeforePlugCheckEnabled = _dspControlService.IsEnableStartChargingBeforePlugCheck();
 
-            _logger.Info($"[충전기] 커넥터 연결 대기 시작. 채널={channelNo}, 커넥터타입={connectorType}");
-            _logger.Info($"[충전기] 커넥터 연결 대기 진입 상태. 채널={channelNo}, Plug={initialPlugChecked}, ChargingRun={initialChargingRun}, Fault={initialFault}, StartBeforePlugCheck={startBeforePlugCheckEnabled}");
+            _logger.Info($"[WaitForConnectorPlugIn] 커넥터 연결 대기 시작. 채널={channelNo}, 커넥터타입={connectorType}");
+            _logger.Info($"[WaitForConnectorPlugIn] 커넥터 연결 대기 진입 상태. 채널={channelNo}, Plug={initialPlugChecked}, ChargingRun={initialChargingRun}, Fault={initialFault}, StartBeforePlugCheck={startBeforePlugCheckEnabled}");
 
             // 이브이시스 차데모의 경우 WaitForConnectorPlugIn 시퀀스 pass
             if (AppSettingsManager.ChargerSettings.ChargerManufacturerCode == "evsis" && ch.ChargingSelect == 2)
             {
-                _logger.Info($"[충전기] 커넥터 연결 대기 건너뜀 (evsis 차데모). 채널={channelNo}");
+                _logger.Info($"[WaitForConnectorPlugIn] 커넥터 연결 대기 건너뜀 (evsis 차데모). 채널={channelNo}");
                 return;
             }
 
@@ -2224,7 +2224,7 @@ namespace EvChargerUI.Models
                 {
                     if (ch.IsWaitForConnectorPlugInCancelled)
                     {
-                        _logger.Info($"[충전기] 커넥터 연결 대기 취소 (준비 상태 확인 중). 채널={channelNo}");
+                        _logger.Info($"[WaitForConnectorPlugIn] 커넥터 연결 대기 취소 (준비 상태 확인 중). 채널={channelNo}");
                         return;
                     }
                     await Task.Delay(200);
@@ -2232,7 +2232,7 @@ namespace EvChargerUI.Models
 
                 if (ch.IsWaitForConnectorPlugInCancelled)
                 {
-                    _logger.Info($"[충전기] 커넥터 연결 대기 취소 (충전 시작 명령 전). 채널={channelNo}");
+                    _logger.Info($"[WaitForConnectorPlugIn] 커넥터 연결 대기 취소 (충전 시작 명령 전). 채널={channelNo}");
                     return;
                 }
 
@@ -2241,7 +2241,7 @@ namespace EvChargerUI.Models
 
             if (ch.IsWaitForConnectorPlugInCancelled)
             {
-                _logger.Info($"[충전기] 커넥터 연결 대기 취소 (플러그 체크 전). 채널={channelNo}");
+                _logger.Info($"[WaitForConnectorPlugIn] 커넥터 연결 대기 취소 (플러그 체크 전). 채널={channelNo}");
                 return;
             }
 
@@ -2249,13 +2249,13 @@ namespace EvChargerUI.Models
             {
                 if (ch.IsWaitForConnectorPlugInCancelled)
                 {
-                    _logger.Info($"[충전기] 커넥터 연결 대기 취소 (플러그 체크 중). 채널={channelNo}");
+                    _logger.Info($"[WaitForConnectorPlugIn] 커넥터 연결 대기 취소 (플러그 체크 중). 채널={channelNo}");
                     return;
                 }
                 await Task.Delay(200);
             }
 
-            _logger.Info($"[충전기] 커넥터 연결 대기 완료. 채널={channelNo}");
+            _logger.Info($"[WaitForConnectorPlugIn] 커넥터 연결 대기 완료. 채널={channelNo}");
         }
 
 
@@ -2267,22 +2267,22 @@ namespace EvChargerUI.Models
 
         public void StartCharging(int channelNo)
         {
-            _logger.Info($"[충전기] 충전 시작 호출. 채널={channelNo}, 제조사={AppSettingsManager.ChargerSettings.ChargerManufacturerCode}");
+            _logger.Info($"[StartCharging] 충전 시작 호출. 채널={channelNo}, 제조사={AppSettingsManager.ChargerSettings.ChargerManufacturerCode}");
 
             if (AppSettingsManager.ChargerSettings.ChargerManufacturerCode == "evsis")
             {
                 SetChargeReadyForEvsis(channelNo);
-                _logger.Info($"[충전기] 충전 시작 -> EVSIS 충전 준비 명령. 채널={channelNo}");
+                _logger.Info($"[StartCharging] 충전 시작 -> EVSIS 충전 준비 명령. 채널={channelNo}");
             }
             else if (!_dspControlService.IsEnableStartChargingBeforePlugCheck())
             {
                 int connectorType = _channels[channelNo].ChargingSelect;
                 _dspControlService.SetChargeStart(channelNo, connectorType);
-                _logger.Info($"[충전기] 충전 시작 -> 충전 시작 명령 전송. 채널={channelNo}, 커넥터타입={connectorType}");
+                _logger.Info($"[StartCharging] 충전 시작 -> 충전 시작 명령 전송. 채널={channelNo}, 커넥터타입={connectorType}");
             }
             else
             {
-                _logger.Info($"[충전기] 충전 시작 건너뜀 (플러그 체크 전에 이미 시작됨). 채널={channelNo}");
+                _logger.Info($"[StartCharging] 충전 시작 건너뜀 (플러그 체크 전에 이미 시작됨). 채널={channelNo}");
             }
         }
 
@@ -2300,7 +2300,7 @@ namespace EvChargerUI.Models
             bool result = _dspControlService.GetChargingRunStatus(channelNo);
             if (result)
             {
-                _logger.Info($"[충전기] 충전 시작 감지=TRUE. 채널={channelNo}");
+                _logger.Info($"[CheckChargingStart] 충전 시작 감지=TRUE. 채널={channelNo}");
             }
             return result;
         }
@@ -2390,7 +2390,7 @@ namespace EvChargerUI.Models
         {
             int connectorType = _channels[channelNo].ChargingSelect;
 
-            _logger.Info($"[충전기] 충전 중지 시작. 채널={channelNo}, 커넥터타입={connectorType}");
+            _logger.Info($"[StopCharging] 충전 중지 시작. 채널={channelNo}, 커넥터타입={connectorType}");
             _dspControlService.SetChargeStop(channelNo, connectorType);
 
             int CheckCount = 0; //충전중 종료되었을때 예외처리하기 위함.
@@ -2403,12 +2403,12 @@ namespace EvChargerUI.Models
 
                 if (CheckCount > 10) //충전중 종료되었을때 예외처리하기 위함.
                 {
-                    _logger.Warn($"[충전기] 충전 중지 타임아웃. 채널={channelNo}, 확인횟수={CheckCount}");
+                    _logger.Warn($"[StopCharging] 충전 중지 타임아웃. 채널={channelNo}, 확인횟수={CheckCount}");
                     break;
                 }
             }
             _dspControlService.SetChargerInit(channelNo);
-            _logger.Info($"[충전기] 충전 중지 완료. 채널={channelNo}, 확인횟수={CheckCount}");
+            _logger.Info($"[StopCharging] 충전 중지 완료. 채널={channelNo}, 확인횟수={CheckCount}");
 
         }
 
@@ -3023,7 +3023,7 @@ namespace EvChargerUI.Models
             // 중복 실행 방지
             if (_isUpdateInProgress)
             {
-                _logger.Debug("[In-Process Update] 이미 업데이트가 진행 중이므로 건너뜁니다.");
+                //_logger.Debug("[In-Process Update] 이미 업데이트가 진행 중이므로 건너뜁니다.");
                 return;
             }
 
@@ -3033,7 +3033,7 @@ namespace EvChargerUI.Models
                 _updateCheckTimer.Stop();
             }
 
-            _logger.Debug("[In-Process Update__PerformUpdate] 시작.");
+            //_logger.Debug("[In-Process Update__PerformUpdate] 시작.");
 
             try
             {
@@ -3041,7 +3041,7 @@ namespace EvChargerUI.Models
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 string updateDir = Path.Combine(baseDir, "update");
 
-                _logger.Debug("[In-Process Update] 경로 체크.");
+                //_logger.Debug("[In-Process Update] 경로 체크.");
 
                 bool updateDirExists = await Task.Run(() => Directory.Exists(updateDir));
                 if (!updateDirExists)
@@ -3053,7 +3053,7 @@ namespace EvChargerUI.Models
                     return;
                 }
 
-                _logger.Debug("[In-Process Update] 업데이트 구성 요소 존재 여부 확인.");
+                //_logger.Debug("[In-Process Update] 업데이트 구성 요소 존재 여부 확인.");
 
                 // 2. 업데이트 구성 요소 존재 여부 확인
                 string newExePath = Path.Combine(updateDir, "EvChargerUI.exe");
@@ -3064,11 +3064,11 @@ namespace EvChargerUI.Models
                 bool frontUpdateDirExists = await Task.Run(() => Directory.Exists(frontUpdatePath));
 
                 // 업데이트할 내용이 없으면 폴더 정리 후 종료
-                _logger.Debug("[In-Process Update] 업데이트할 내용이 없으면 폴더 정리 후 종료.");
+                //_logger.Debug("[In-Process Update] 업데이트할 내용이 없으면 폴더 정리 후 종료.");
 
                 if (!newExeExists && !frontUpdateDirExists)
                 {
-                    _logger.Info("[업데이트 확인] 업데이트 디렉토리가 비어있거나 유효하지 않습니다. 정리합니다.");
+                    //_logger.Info("[업데이트 확인] 업데이트 디렉토리가 비어있거나 유효하지 않습니다. 정리합니다.");
                     Directory.Delete(updateDir, true);
                     lock (_timerLock)
                     {
@@ -3078,7 +3078,7 @@ namespace EvChargerUI.Models
                 }
 
                 // 3. 충전기 유휴 상태 확인 (모든 업데이트 유형에 필요)
-                _logger.Debug("[In-Process Update] 충전기 유휴 상태 확인 (모든 업데이트 유형에 필요).");
+                //_logger.Debug("[In-Process Update] 충전기 유휴 상태 확인 (모든 업데이트 유형에 필요).");
                 var mainVm = ((App)Application.Current).MainView?.DataContext as ViewModels.MainViewModel;
                 if (mainVm == null || (mainVm.LeftChargerView == null))
                 {
@@ -3095,10 +3095,10 @@ namespace EvChargerUI.Models
                 bool isLeftIdle = leftVm?.CurrentChargeSequence == Commons.Enum.ChargeSequence.SelectConnector || leftVm?.CurrentChargeSequence == Commons.Enum.ChargeSequence.Completed;
                 bool isRightIdle = rightVm == null || rightVm.CurrentChargeSequence == Commons.Enum.ChargeSequence.SelectConnector || rightVm.CurrentChargeSequence == Commons.Enum.ChargeSequence.Completed;
 
-                _logger.Debug($"[In-Process Update] 충전기 유휴 상태 확인: Left={isLeftIdle} (seq={leftVm?.CurrentChargeSequence}), Right={isRightIdle} (seq={rightVm?.CurrentChargeSequence})");
+                //_logger.Debug($"[In-Process Update] 충전기 유휴 상태 확인: Left={isLeftIdle} (seq={leftVm?.CurrentChargeSequence}), Right={isRightIdle} (seq={rightVm?.CurrentChargeSequence})");
                 if (!isLeftIdle || !isRightIdle)
                 {
-                    _logger.Info("[In-Process Update] 업데이트가 대기 중이지만 충전기가 유휴 상태가 아닙니다. 다음 주기에 다시 확인합니다.");
+                    //_logger.Info("[In-Process Update] 업데이트가 대기 중이지만 충전기가 유휴 상태가 아닙니다. 다음 주기에 다시 확인합니다.");
                     lock (_timerLock)
                     {
                         _updateCheckTimer.Start();
@@ -3108,7 +3108,7 @@ namespace EvChargerUI.Models
 
                 // 4. 업데이트 수행
                 _isUpdateInProgress = true;
-                _logger.Info("[In-Process Update] 충전기가 유휴 상태입니다. 업데이트를 시작합니다.");
+                //_logger.Info("[In-Process Update] 충전기가 유휴 상태입니다. 업데이트를 시작합니다.");
 
                 await Task.Run(async () =>
                 {
@@ -3117,10 +3117,10 @@ namespace EvChargerUI.Models
                         // UpdateFrontFile 폴더가 존재하면 폴더 자체를 복사
                         if (frontUpdateDirExists)
                         {
-                            _logger.Info("[In-Process Update] UpdateFrontFile 폴더를 발견했습니다. 폴더를 복사합니다.");
+                            //_logger.Info("[In-Process Update] UpdateFrontFile 폴더를 발견했습니다. 폴더를 복사합니다.");
                             string destinationPath = Path.Combine(baseDir, new DirectoryInfo(frontUpdatePath).Name);
                             CopyDirectory(frontUpdatePath, destinationPath, true);
-                            _logger.Info("[In-Process Update] UpdateFrontFile 폴더 복사가 완료되었습니다.");
+                            //_logger.Info("[In-Process Update] UpdateFrontFile 폴더 복사가 완료되었습니다.");
                         }
 
                         // 새 실행 파일이 있으면 교체 후 프로그램 종료
@@ -3131,26 +3131,26 @@ namespace EvChargerUI.Models
 
                             if (originFileExists)
                             {
-                                _logger.Info($"[In-Process Update] 실행 중인 EXE 이름 변경: {originExePath}");
+                                //_logger.Info($"[In-Process Update] 실행 중인 EXE 이름 변경: {originExePath}");
                                 File.Move(originExePath, backupExePath);
-                                _logger.Info("[In-Process Update] 이름 변경 성공.");
+                                //_logger.Info("[In-Process Update] 이름 변경 성공.");
                             }
-                            else
-                            {
-                                _logger.Info($"[In-Process Update] 원본 EXE를 찾을 수 없습니다. 복사만 진행합니다.");
-                            }
+                            //else
+                            //{
+                            //    //_logger.Info($"[In-Process Update] 원본 EXE를 찾을 수 없습니다. 복사만 진행합니다.");
+                            //}
 
-                            _logger.Info($"[In-Process Update] 새 EXE 복사 중: {newExePath}");
+                            //_logger.Info($"[In-Process Update] 새 EXE 복사 중: {newExePath}");
                             File.Copy(newExePath, originExePath, true);
-                            _logger.Info("[In-Process Update] 복사 성공.");
+                            //_logger.Info("[In-Process Update] 복사 성공.");
 
                             // EXE 업데이트 시에만 프로그램 종료
-                            _logger.Info("[In-Process Update] 업데이트 파일 정리 중.");
+                            //_logger.Info("[In-Process Update] 업데이트 파일 정리 중.");
                             Directory.Delete(updateDir, true);
 
                             await Application.Current.Dispatcher.InvokeAsync(() =>
                             {
-                                _logger.Info("[In-Process Update] EXE 업데이트 성공. 프로그램을 종료합니다. [SHUTDOWN_REASON: In-Process EXE Update]");
+                                //_logger.Info("[In-Process Update] EXE 업데이트 성공. 프로그램을 종료합니다. [SHUTDOWN_REASON: In-Process EXE Update]");
                                 AppSettingsManager.EvCommSettings.LastUiUpdateDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                                 AppSettingsManager.Save();
                                 Application.Current.Shutdown();
@@ -3158,7 +3158,7 @@ namespace EvChargerUI.Models
                         }
                         else // UpdateFrontFile만 업데이트된 경우
                         {
-                            _logger.Info("[In-Process Update] UpdateFrontFile만 업데이트 완료. 정리합니다.");
+                            //_logger.Info("[In-Process Update] UpdateFrontFile만 업데이트 완료. 정리합니다.");
                             Directory.Delete(updateDir, true);
                         }
                     }

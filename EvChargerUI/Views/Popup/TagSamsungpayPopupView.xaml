@@ -36,7 +36,7 @@
                     <Image Grid.Column="1" x:Name="TagSamsungpayImage"/>
                 </Grid>
                 <Button Grid.Row="5" Command="{Binding ClosePopupTagSamsungpayCommand}" IsEnabled="{Binding IsPaymentCancelButtonEnabled}" Style="{StaticResource CancelPopupButtonStyle}"/>
-                
+
             </Grid>
         </Grid>
     </Grid>

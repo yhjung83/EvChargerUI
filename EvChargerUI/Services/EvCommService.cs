@@ -2046,18 +2046,21 @@ namespace EvChargerUI.Services
         }
 
         /// <summary>
-        /// 프로그램 시작 시 서버 시간이 포함된 첫 번째 응답에서만 1회 시간 동기화 시도
+        /// 프로그램 실행 중 최초 1회만 시간 동기화 시도
         /// </summary>
         private void TrySyncWindowsTimeOnce(JObject retJObject)
         {
             // 이미 동기화를 시도한 경우 skip
             if (_isTimeSyncedOnStartup)
             {
-                _logger.Info("[TIME_SYNC] 시작 시 동기화가 이미 실행되었습니다. 건너뜁니다.");
+                _logger.Info("[TIME_SYNC] 시작 시 동기화 시도는 이미 실행되었습니다. 건너뜁니다.");
                 return;
             }
 
-            _logger.Info("[TIME_SYNC] ===== 시간 동기화 시작 (프로그램 시작 시 1회) =====");
+            // 성공/실패와 무관하게 앱 실행 중 1회만 시도
+            _isTimeSyncedOnStartup = true;
+
+            _logger.Info("[TIME_SYNC] ===== 시간 동기화 시작 (앱 실행 중 1회 시도) =====");
 
             try
             {
@@ -2071,7 +2074,7 @@ namespace EvChargerUI.Services
 
                 if (string.IsNullOrEmpty(responseDateStr))
                 {
-                    _logger.Info("[TIME_SYNC] response_date가 없는 응답입니다. 다음 서버 응답에서 다시 시도합니다.");
+                    _logger.Info("[TIME_SYNC] response_date가 없는 응답입니다. 1회 시도 정책에 따라 재시도하지 않습니다.");
                     return;
                 }
 
@@ -2079,11 +2082,9 @@ namespace EvChargerUI.Services
                 DateTime serverTime;
                 if (!TryParseServerDateTime(responseDateStr, out serverTime))
                 {
-                    _logger.Warn($"[TIME_SYNC] response_date 파싱 실패: '{responseDateStr}'. 다음 서버 응답에서 다시 시도합니다.");
+                    _logger.Warn($"[TIME_SYNC] response_date 파싱 실패: '{responseDateStr}'. 1회 시도 정책에 따라 재시도하지 않습니다.");
                     return;
                 }
-
-                _isTimeSyncedOnStartup = true; // 유효한 서버 시각 확인 후 중복 실행 방지
 
                 _logger.Info($"[TIME_SYNC] 파싱된 서버 시각 = {serverTime:yyyy-MM-dd HH:mm:ss}");
 
@@ -2118,7 +2119,7 @@ namespace EvChargerUI.Services
             }
             finally
             {
-                _logger.Info("[TIME_SYNC] ===== 시간 동기화 완료 =====");
+                _logger.Info("[TIME_SYNC] ===== 시간 동기화 시도 완료 =====");
             }
         }
 

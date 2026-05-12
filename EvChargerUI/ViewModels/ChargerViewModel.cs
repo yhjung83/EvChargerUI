@@ -1915,7 +1915,6 @@ namespace EvChargerUI.ViewModels
             }
 
             _chargerChannel.PaymentMethod = PaymentMethod.RfCard;
-            _isRfCardCancelledByUser = false;
             
             _parentViewModel.PopupTagRFCard(this);
 
@@ -2778,11 +2777,18 @@ namespace EvChargerUI.ViewModels
             // 단말기 응답이 와서 PayCost가 종료되면 ConfirmChargeAmount의 실패 분기에서 팝업을 닫는다.
             _isPaymentCancelledByUser = true;
             IsPaymentCancelButtonEnabled = false;
+
+            _isRfCardCancelledByUser = true;
+
             await _charger.CancelCardReading(_chargerChannel);
+            //_chargerChannel.InitPaymentInfo();
+            //UserSetCost = 0;
+            //_parentViewModel.ClosePopup();
         }
         private async void ClosePopupTagRFCard(object param)
         {
             _isRfCardCancelledByUser = true;
+
             await _charger.CancelCardReading(_chargerChannel);
             _chargerChannel.InitPaymentInfo();
             UserSetCost = 0;
@@ -2794,7 +2800,11 @@ namespace EvChargerUI.ViewModels
 
             _isPaymentCancelledByUser = true;
             IsPaymentCancelButtonEnabled = false;
+
             await _charger.CancelCardReading(_chargerChannel);
+            //_chargerChannel.InitPaymentInfo();
+            //UserSetCost = 0;
+            //_parentViewModel.ClosePopup();
         }
         private void ClosePopupQrCode(object param)
         {
