@@ -3042,11 +3042,12 @@ namespace EvChargerUI.ViewModels
                         _parentViewModel.ClosePopup();
                     }
 
-                    // QR 결제 시 tid 저장
+                    // QR 결제 시 tid 저장 및 결제 방법 설정
                     if (!string.IsNullOrEmpty(args.Tid))
                     {
                         _chargerChannel.QrTid = args.Tid;
-                        _logger.Info($"[OnQrChargingStarted] QrTid set to: {args.Tid}");
+                        _chargerChannel.PaymentMethod = PaymentMethod.QrCode;
+                        _logger.Info($"[OnQrChargingStarted] QrTid set to: {args.Tid}, PaymentMethod set to QrCode");
                     }
                     try
                     {
