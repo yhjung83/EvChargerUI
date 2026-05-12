@@ -68,6 +68,14 @@ namespace EvChargerUI.ViewModels
         private static int _dualChannelSelectOwner = -1; // -1=소유자 없음, 0/1=채널 번호
         private bool _isSelectPaymentMethodInProgress = false;
 
+        // 결제 카드 대기 팝업(IC/삼성페이)에서 사용자가 취소 버튼을 누른 경우 플래그
+        // true일 때는 PayCost 실패 응답이 와도 결제 실패 팝업을 띄우지 않고 그냥 닫음
+        private bool _isPaymentCancelledByUser = false;
+
+        // RF 카드 대기 팝업에서 사용자가 취소 버튼을 누른 경우 플래그
+        // true일 때는 ReadRfCard 실패 응답이 와도 결제 실패 팝업을 띄우지 않음
+        private bool _isRfCardCancelledByUser = false;
+
         // Home 버튼 연속 클릭 방지 (UI 경로 전용)
         private bool _isHomeInitializeClickLocked = false;
         private DateTime _lastHomeInitializeAt = DateTime.MinValue;
@@ -252,6 +260,19 @@ namespace EvChargerUI.ViewModels
             {
                 _isHomeButtonEnabled = value;
                 OnPropertyChanged(nameof(IsHomeButtonEnabled));
+            }
+        }
+
+        // 결제 카드 대기 팝업(IC/삼성페이)의 취소 버튼 활성화 상태
+        // 사용자가 취소 누른 직후 REQ_STOP 응답이 올 때까지 false로 두어 버튼만 비활성화
+        protected bool _isPaymentCancelButtonEnabled = true;
+        public bool IsPaymentCancelButtonEnabled
+        {
+            get => _isPaymentCancelButtonEnabled;
+            set
+            {
+                _isPaymentCancelButtonEnabled = value;
+                OnPropertyChanged(nameof(IsPaymentCancelButtonEnabled));
             }
         }
 
@@ -1894,6 +1915,7 @@ namespace EvChargerUI.ViewModels
             }
 
             _chargerChannel.PaymentMethod = PaymentMethod.RfCard;
+            _isRfCardCancelledByUser = false;
             
             _parentViewModel.PopupTagRFCard(this);
 
@@ -1907,6 +1929,13 @@ namespace EvChargerUI.ViewModels
             // 회원 카드 읽기 실패 확인 (단말기 연결 안되어 있으면 빈 값 반환)
             if (string.IsNullOrEmpty(_chargerChannel.MembershipNo))
             {
+                // 사용자가 취소 버튼을 눌러 중단된 경우 실패 팝업 없이 종료
+                if (_isRfCardCancelledByUser)
+                {
+                    _isRfCardCancelledByUser = false;
+                    return;
+                }
+
                 _logger.Warn("[SelectRFCard] Failed to read membership card. MembershipNo is empty.");
                 SetDefaultPaymentFailMessage();
                 _parentViewModel.PaymentFailPopup(this);
@@ -2672,6 +2701,8 @@ namespace EvChargerUI.ViewModels
             _chargerChannel.UserSetChargeAmount = MoneyUtil.TruncateWonUnit(int.Parse(param.ToString()));
             UserSetCost = _chargerChannel.UserSetChargeAmount;
             _chargerChannel.PrePaymentInfo = null;
+            _isPaymentCancelledByUser = false;
+            IsPaymentCancelButtonEnabled = true;
 
             switch (_chargerChannel.PaymentMethod)
             {
@@ -2704,6 +2735,19 @@ namespace EvChargerUI.ViewModels
             }
             else
             {
+                // 사용자가 결제 카드 대기 팝업에서 취소 버튼을 눌러 결제가 중단된 경우:
+                // REQ_STOP 응답이 도착했으므로 이 시점에 팝업을 닫고 상태를 정리.
+                // 결제 실패 팝업은 띄우지 않는다.
+                if (_isPaymentCancelledByUser)
+                {
+                    _isPaymentCancelledByUser = false;
+                    _chargerChannel.InitPaymentInfo();
+                    UserSetCost = 0;
+                    IsPaymentCancelButtonEnabled = true;
+                    _parentViewModel.ClosePopup();
+                    return;
+                }
+
                 SetDefaultPaymentFailMessage();
                 _parentViewModel.PaymentFailPopup(this);
             }
@@ -2727,13 +2771,18 @@ namespace EvChargerUI.ViewModels
 
         private async void ClosePopupInsertICCard(object param)
         {
+            // 중복 클릭 방지: 이미 취소가 진행 중이면 무시
+            if (!IsPaymentCancelButtonEnabled) return;
+
+            // 취소 버튼만 비활성화한 채로 팝업은 유지하고 REQ_STOP만 송신.
+            // 단말기 응답이 와서 PayCost가 종료되면 ConfirmChargeAmount의 실패 분기에서 팝업을 닫는다.
+            _isPaymentCancelledByUser = true;
+            IsPaymentCancelButtonEnabled = false;
             await _charger.CancelCardReading(_chargerChannel);
-            _chargerChannel.InitPaymentInfo();
-            UserSetCost = 0;
-            _parentViewModel.ClosePopup();
         }
         private async void ClosePopupTagRFCard(object param)
         {
+            _isRfCardCancelledByUser = true;
             await _charger.CancelCardReading(_chargerChannel);
             _chargerChannel.InitPaymentInfo();
             UserSetCost = 0;
@@ -2741,10 +2790,11 @@ namespace EvChargerUI.ViewModels
         }
         private async void ClosePopupTagSamsungpay(object param)
         {
+            if (!IsPaymentCancelButtonEnabled) return;
+
+            _isPaymentCancelledByUser = true;
+            IsPaymentCancelButtonEnabled = false;
             await _charger.CancelCardReading(_chargerChannel);
-            _chargerChannel.InitPaymentInfo();
-            UserSetCost = 0;
-            _parentViewModel.ClosePopup();
         }
         private void ClosePopupQrCode(object param)
         {

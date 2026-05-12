@@ -47,7 +47,7 @@
 
                 </Viewbox>
 
-                <Button  Grid.Row="7" Command="{Binding ClosePopupInsertICCardCommand}"  Style="{StaticResource CancelPopupButtonStyle}"/>
+                <Button  Grid.Row="7" Command="{Binding ClosePopupInsertICCardCommand}" IsEnabled="{Binding IsPaymentCancelButtonEnabled}" Style="{StaticResource CancelPopupButtonStyle}"/>
 
             </Grid>
         </Grid>
