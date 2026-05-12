@@ -998,7 +998,7 @@ namespace EvChargerUI.Services
             string tid = null;
             string chargerType = null;
             string errorCode = null;
-            bool isQrPopupOpen = false; // QR 팝업이 열려있는지 확인
+            bool isQrPaymentAllowed = false; // QR 결제 허용 여부 (QR팝업 OR 커넥터선택 OR 결제방법선택)
 
             try
             {
@@ -1010,41 +1010,68 @@ namespace EvChargerUI.Services
                 tid = jsonParser.GetJSonData(reqJObject, "tid");
                 chargerType = jsonParser.GetJSonData(reqJObject, "chargetype");
 
-                // QR 팝업이 열려있는지 확인
+                // QR 결제 허용 화면 여부 확인: QR 팝업, 커넥터 선택, 결제 방법 선택 화면
                 try
                 {
-                    isQrPopupOpen = Application.Current.Dispatcher.Invoke(() =>
+                    isQrPaymentAllowed = Application.Current.Dispatcher.Invoke(() =>
                     {
                         try
                         {
                             var mainView = ((App)Application.Current).MainView;
-                            if (mainView != null)
-                            {
-                                _logger.Info($"[CallBackResponseDataAuth] MainView found. Checking PopupView...");
-                                if (mainView.DataContext is MainViewModel mainViewModel)
-                                {
-                                    _logger.Info($"[CallBackResponseDataAuth] MainViewModel found. PopupView is null: {mainViewModel.PopupView == null}");
-                                    if (mainViewModel.PopupView != null)
-                                    {
-                                        _logger.Info($"[CallBackResponseDataAuth] PopupView type: {mainViewModel.PopupView.GetType().FullName}");
-                                        bool isQr = mainViewModel.PopupView is QrCodePopupView;
-                                        _logger.Info($"[CallBackResponseDataAuth] isQrPopupOpen: {isQr}");
-                                        return isQr;
-                                    }
-                                    else
-                                    {
-                                        _logger.Info($"[CallBackResponseDataAuth] PopupView is null. IsDimmed: {mainViewModel.IsDimmed}");
-                                    }
-                                }
-                                else
-                                {
-                                    _logger.Info($"[CallBackResponseDataAuth] MainView.DataContext is not MainViewModel. Type: {mainView.DataContext?.GetType().FullName}");
-                                }
-                            }
-                            else
+                            if (mainView == null)
                             {
                                 _logger.Info($"[CallBackResponseDataAuth] MainView is null");
+                                return false;
                             }
+
+                            if (!(mainView.DataContext is MainViewModel mainViewModel))
+                            {
+                                _logger.Info($"[CallBackResponseDataAuth] MainView.DataContext is not MainViewModel. Type: {mainView.DataContext?.GetType().FullName}");
+                                return false;
+                            }
+
+                            _logger.Info($"[CallBackResponseDataAuth] MainViewModel found. PopupView: {mainViewModel.PopupView?.GetType().Name ?? "null"}");
+
+                            // 1. QR 팝업이 열려있으면 허용
+                            if (mainViewModel.PopupView is QrCodePopupView)
+                            {
+                                _logger.Info($"[CallBackResponseDataAuth] QR popup is open. Allowing.");
+                                return true;
+                            }
+
+                            // 2. 다른 팝업이 열려있으면 거부
+                            if (mainViewModel.PopupView != null)
+                            {
+                                _logger.Info($"[CallBackResponseDataAuth] Other popup is open: {mainViewModel.PopupView.GetType().Name}. Rejecting.");
+                                return false;
+                            }
+
+                            // 3. 팝업 없음: 해당 채널이 커넥터 선택 또는 결제 방법 선택 화면인지 확인
+                            var charger = ((App)Application.Current).Charger;
+                            if (charger != null)
+                            {
+                                for (int i = 0; i < charger.Channels.Length; i++)
+                                {
+                                    var channel = charger.Channels[i];
+                                    if (channel != null && channel.StationId == stationId && channel.ChargerId == chargerId)
+                                    {
+                                        var seq = channel.CurrentSequence;
+                                        _logger.Info($"[CallBackResponseDataAuth] Channel {i} CurrentSequence: {seq}");
+                                        if (seq == ChargeSequence.SelectConnector || seq == ChargeSequence.SelectPaymentMethod)
+                                        {
+                                            _logger.Info($"[CallBackResponseDataAuth] Channel {i} is on {seq} screen. Allowing.");
+                                            return true;
+                                        }
+                                        else
+                                        {
+                                            _logger.Info($"[CallBackResponseDataAuth] Channel {i} is on {seq} screen. Rejecting.");
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+
+                            _logger.Info($"[CallBackResponseDataAuth] No matching channel found. stationId: {stationId}, chargerId: {chargerId}");
                             return false;
                         }
                         catch (Exception ex)
@@ -1056,10 +1083,10 @@ namespace EvChargerUI.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"[CallBackResponseDataAuth] Error checking QR popup status: {ex.Message}, StackTrace: {ex.StackTrace}");
+                    _logger.Error($"[CallBackResponseDataAuth] Error checking QR payment allowed status: {ex.Message}, StackTrace: {ex.StackTrace}");
                 }
 
-                if (isQrPopupOpen)
+                if (isQrPaymentAllowed)
                 {
                     // QR 결제 시 DSP 상태 이상, 비상정지, 점검중 중 하나일 경우 거부
                     int dspStatus = AppSettingsManager.EvCommSettings.EVSE_DSP_Status;
@@ -1075,13 +1102,13 @@ namespace EvChargerUI.Services
                     else
                     {
                         reponse = "1";
-                        _logger.Info($"[CallBackResponseDataAuth] QR popup is open. Accepting auth request. stationId: {stationId}, chargerId: {chargerId}, tid: {tid}");
+                        _logger.Info($"[CallBackResponseDataAuth] QR payment allowed. Accepting auth request. stationId: {stationId}, chargerId: {chargerId}, tid: {tid}");
                     }
                 }
                 else
                 {
                     reponse = "0";
-                    _logger.Info($"[CallBackResponseDataAuth] QR popup is not open. Rejecting auth request. stationId: {stationId}, chargerId: {chargerId}, tid: {tid}");
+                    _logger.Info($"[CallBackResponseDataAuth] QR payment not allowed on current screen. Rejecting auth request. stationId: {stationId}, chargerId: {chargerId}, tid: {tid}");
                 }
             }
             catch (Exception ex)
@@ -1109,8 +1136,8 @@ namespace EvChargerUI.Services
                     resultMsg = "02";
                     _logger.Info($"[CallBackResponseDataAuth] QR payment result_msg set to 02 due to abnormal status. DSP: {dspStatus}, Emergency: {emergencyStatus}, EVSE: {evseStatus}");
                 }
-                // QR 창이 안 열려있어도 해당 충전기가 충전 중이면 result_msg 01
-                else if (!isQrPopupOpen)
+                // QR 결제 허용 화면이 아닌 경우에도 해당 충전기가 충전 중이면 result_msg 01
+                else if (!isQrPaymentAllowed)
                 {
                     bool isCharging = false;
                     try
