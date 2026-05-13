@@ -1934,6 +1934,7 @@ namespace EvChargerUI.ViewModels
                 if (_isRfCardCancelledByUser)
                 {
                     _isRfCardCancelledByUser = false;
+                    IsPaymentCancelButtonEnabled = true;
                     return;
                 }
 

@@ -158,9 +158,12 @@ namespace EvChargerUI.Services
                 cancelCost = MoneyUtil.TruncateWonUnit(cancelCost);
                 int tax = (int)((double)cancelCost - (double)cancelCost / 1.1);
 
+                int totalCost = Int32.Parse(paymentInfo.TotalCost);
+                int totalTax = (int)((double)totalCost - (double)totalCost / 1.1);
+
                 string sendData;
-                if (Int32.Parse(paymentInfo.TotalCost) == cancelCost || (Int32.Parse(paymentInfo.TotalCost) - cancelCost) < 100)
-                    sendData = "0420" + fs + "10" + fs + "N" + fs + cancelCost.ToString() + fs + tax.ToString() + fs + "0" + fs + "00" + fs + paymentInfo.AuthNum + fs + paymentInfo.PayDate + fs + "" + fs + fs + fs + paymentInfo.PgNum + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs;
+                if (totalCost == cancelCost || (totalCost - cancelCost) < 100)
+                    sendData = "0420" + fs + "10" + fs + "N" + fs + totalCost.ToString() + fs + totalTax.ToString() + fs + "0" + fs + "00" + fs + paymentInfo.AuthNum + fs + paymentInfo.PayDate + fs + "" + fs + fs + fs + paymentInfo.PgNum + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs;
                 else
                     sendData = "0520" + fs + "30" + fs + "N" + fs + cancelCost.ToString() + fs + tax.ToString() + fs + "0" + fs + "00" + fs + paymentInfo.AuthNum + fs + paymentInfo.PayDate + fs + "" + fs + fs + fs + paymentInfo.PgNum + fs + fs + fs + fs + fs + "" + fs + "P" + paymentInfo.TotalCost + fs + "PCL" + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs;
 
