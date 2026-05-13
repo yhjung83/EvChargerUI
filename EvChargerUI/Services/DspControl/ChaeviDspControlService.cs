@@ -194,10 +194,12 @@ namespace EvChargerUI.Services.DspControl
             Debug.WriteLine("SetChargePrepare");
             TxData data = _dspControl.GetTxData(channel);
             data.Initialize();
-            if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100N-U" || AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100W-U")
+            if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100N-U")
                 data.CylinderFrontForStop = true;
             if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FNHOC-U")
                 data.CylinderFrontForStart = true;
+            if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100W-U")
+                data.CylinderFrontForStop = false;
             data.Type = MapConnectorType(connectorType);
             _dspControl.RequestWriteRegister(channel);
         }
@@ -209,6 +211,12 @@ namespace EvChargerUI.Services.DspControl
             data.Initialize();
             data.MotorMoveLeft = true;
             data.CylinderFrontForStop = false;
+            if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100W-U")
+            {
+                data.StartPnc = true;
+                data.Canopy200 = true;
+                data.Type = 2;
+            }
             _dspControl.RequestWriteRegister(channel);
         }
 
@@ -219,6 +227,12 @@ namespace EvChargerUI.Services.DspControl
             data.Initialize();
             data.MotorMoveRight = true;
             data.CylinderFrontForStop = false;
+            if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100W-U")
+            {
+                data.StartPnc = true;
+                data.Canopy200 = true;
+                data.Type = 2;
+            }
             _dspControl.RequestWriteRegister(channel);
         }
 
@@ -229,6 +243,12 @@ namespace EvChargerUI.Services.DspControl
             data.Initialize();
             data.MotorMoveUp = true;
             data.CylinderFrontForStop = false;
+            if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100W-U")
+            {
+                data.StartPnc = true;
+                data.Canopy200 = true;
+                data.Type = 2;
+            }
             _dspControl.RequestWriteRegister(channel);
         }
 
@@ -239,6 +259,12 @@ namespace EvChargerUI.Services.DspControl
             data.Initialize();
             data.MotorMoveDown = true;
             data.CylinderFrontForStop = false;
+            if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100W-U")
+            {
+                data.StartPnc = true;
+                data.Canopy200 = true;
+                data.Type = 2;
+            }
             _dspControl.RequestWriteRegister(channel);
         }
 
@@ -251,6 +277,12 @@ namespace EvChargerUI.Services.DspControl
             data.MotorMoveRight = false;
             data.MotorMoveUp = false;
             data.MotorMoveDown = false;
+            if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100W-U")
+            {
+                data.StartPnc = true;
+                data.Canopy200 = true;
+                data.Type = 2;
+            }
             _dspControl.RequestWriteRegister(channel);
         }
 

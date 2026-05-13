@@ -25,6 +25,7 @@ namespace EvChargerUI.Services.DspControl.Chaevi
         private bool _motorMoveUp; // 11 bit
         private bool _cylinderFrontForStop; // 12 bit
         private bool _reset;        // 13 bit
+        private bool _canopy200;       // 14 bit
         private bool _update;       // 15 bit
 
         private ushort _type;                 // Address 201
@@ -99,6 +100,7 @@ namespace EvChargerUI.Services.DspControl.Chaevi
         public bool MotorMoveUp { set => _motorMoveUp = value; } // 11 bit
         public bool CylinderFrontForStop { set => _cylinderFrontForStop = value; } // 12 bit
         public bool Reset { set => _reset = value; }            // 13 bit
+        public bool Canopy200 { set => _canopy200 = value; }           // 14 bit
         public bool Update { set => _update = value; }           // 15 bit
 
         // Address 201 ~ 203
@@ -187,6 +189,7 @@ namespace EvChargerUI.Services.DspControl.Chaevi
             _motorMoveUp = false; // 11 bit
             _cylinderFrontForStop = false; // 12 bit
             _reset = false;       // 13 bit
+            _canopy200 = false;      // 14 bit
             _update = false;      // 15 bit
 
             // Address 201~203
@@ -268,6 +271,7 @@ namespace EvChargerUI.Services.DspControl.Chaevi
             SetBit(ref r200, 11, _motorMoveUp);             // 11 bit
             SetBit(ref r200, 12, _cylinderFrontForStop);    // 12 bit
             SetBit(ref r200, 13, _reset);                   // 13 bit
+            SetBit(ref r200, 14, _canopy200);               // 14 bit
             SetBit(ref r200, 15, _update);                  // 15 bit
             raw[0] = r200;
 
