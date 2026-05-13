@@ -1079,10 +1079,12 @@ namespace EvChargerUI.ViewModels
                 _paymentMethodSelectTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(AppSettingsManager.ChargerTimerSettings.PaymentMethodSelectViewTimer) };
                 _paymentMethodSelectTimer.Tick += PaymentMethodSelectTimer_Tick;
 
-                // SelectConnector 단계(초기화)로 돌아오면 소유권 해제
+                // SelectConnector 단계(초기화)로 돌아오거나 충전이 시작되면 소유권 해제
+                // Charging 진입 시 해제: 이 채널은 이미 충전 시작 → 반대 채널이 독립적으로 결제 진행 가능하도록
                 if (CurrentChargeSequence == ChargeSequence.SelectConnector ||
                     CurrentChargeSequence == ChargeSequence.WaitReservation ||
-                    CurrentChargeSequence == ChargeSequence.Completed)
+                    CurrentChargeSequence == ChargeSequence.Completed ||
+                    CurrentChargeSequence == ChargeSequence.Charging)
                 {
                     ReleaseDualChannelSelectOwnership();
                 }
