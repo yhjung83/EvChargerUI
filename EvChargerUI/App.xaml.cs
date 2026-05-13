@@ -198,6 +198,9 @@ namespace EvChargerUI
 
             if (MainView != null)
             {
+                if (MainView.DataContext is ViewModels.MainViewModel mainVm)
+                    mainVm.Dispose();
+
                 MainView.Close();
                 MainView = null;
             }
@@ -343,6 +346,9 @@ namespace EvChargerUI
 
             if (MainView != null)
             {
+                if (MainView.DataContext is ViewModels.MainViewModel mainVm)
+                    mainVm.Dispose();
+
                 MainView.Close();
                 MainView = null;
             }

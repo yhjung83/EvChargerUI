@@ -56,6 +56,8 @@ namespace EvChargerUI.Models
         private readonly IPaymentService _paymentService;
         public bool IsPaymentServiceConnected => _paymentService?.IsAvailable ?? false;
 
+        public event Action<bool> PaymentDeviceCommFaultChanged;
+
         private DispatcherTimer _emergencyTimer;
 
         private readonly ChargerChannel[] _channels;
@@ -131,7 +133,7 @@ namespace EvChargerUI.Models
             switch (AppSettingsManager.ChargerSettings.PaymentManufacturerCode)
             {
                 case "nice":
-                    _paymentService = new NicePaymentService();
+                    _paymentService = new NicePaymentService(isFault => PaymentDeviceCommFaultChanged?.Invoke(isFault));
                     break;
                 case "techleader":
                     _paymentService = new TechleaderPaymentService();

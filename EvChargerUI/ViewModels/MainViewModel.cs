@@ -179,6 +179,9 @@ namespace EvChargerUI.ViewModels
             _charger = charger;
             _faultHandlingManager = new FaultHandlingManager(_charger);
 
+            _charger.PaymentDeviceCommFaultChanged -= OnPaymentDeviceCommFaultChanged;
+            _charger.PaymentDeviceCommFaultChanged += OnPaymentDeviceCommFaultChanged;
+
 
             if (!string.IsNullOrEmpty(AppSettingsManager.ChargerSettings.RightChannelChargerId))
             {
@@ -521,6 +524,20 @@ namespace EvChargerUI.ViewModels
                 int speed = AppSettingsManager.ChargerSettings.ChargingSpeed;
                 return $"{speed}kW";
             }
+        }
+
+        private void OnPaymentDeviceCommFaultChanged(bool isFault)
+        {
+            if (isFault)
+                _faultHandlingManager.RaisePaymentDeviceCommAlarm();
+            else
+                _faultHandlingManager.ClearPaymentDeviceCommAlarm();
+        }
+
+        public void Dispose()
+        {
+            if (_charger != null)
+                _charger.PaymentDeviceCommFaultChanged -= OnPaymentDeviceCommFaultChanged;
         }
 
         ~MainViewModel()

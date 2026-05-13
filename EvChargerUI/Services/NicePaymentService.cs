@@ -25,10 +25,27 @@ namespace EvChargerUI.Services
         private volatile bool _isAvailable;
         public bool IsAvailable => _isAvailable;
 
+        private volatile bool _isPaymentDeviceCommFault;
+        public bool IsPaymentDeviceCommFault => _isPaymentDeviceCommFault;
+        private bool _prevPaymentDeviceCommFault;
+        private readonly Action<bool> _onPaymentCommFaultChanged;
+
         private void UpdateConnectionState(bool isConnected, bool? isAvailable = null)
         {
             _isConnected = isConnected;
             _isAvailable = isAvailable ?? isConnected;
+        }
+
+        private void UpdatePaymentCommFault(bool isConnected)
+        {
+            bool newFault = !isConnected;
+            if (newFault == _prevPaymentDeviceCommFault)
+                return;
+
+            _isPaymentDeviceCommFault = newFault;
+            _prevPaymentDeviceCommFault = newFault;
+            _logger?.Warn($"[NicePaymentService] PaymentDeviceCommFault changed: {newFault}");
+            _onPaymentCommFaultChanged?.Invoke(newFault);
         }
 
         [DllImport("NVCAT.dll", CharSet = CharSet.Unicode)]
@@ -46,8 +63,9 @@ namespace EvChargerUI.Services
 
         
 
-        public NicePaymentService()
+        public NicePaymentService(Action<bool> onPaymentCommFaultChanged = null)
         {
+            _onPaymentCommFaultChanged = onPaymentCommFaultChanged;
             UpdateConnectionState(false, false);
             _logger = (Application.Current as App)?.AppLogger;
             int intervalMs = Math.Max(10_000,
@@ -234,6 +252,7 @@ namespace EvChargerUI.Services
             }
             finally
             {
+                UpdatePaymentCommFault(_isConnected);
                 lock (_healthCheckLock) { _isHealthCheckRunning = false; }
             }
         }

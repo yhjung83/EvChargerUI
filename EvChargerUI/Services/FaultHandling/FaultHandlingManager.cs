@@ -59,6 +59,9 @@ namespace EvChargerUI.Services.FaultHandling
         private string _lastAlarmCode = "0000";
         private string _lastLoggedAlarmCode = null;
 
+        private bool _paymentDeviceAlarmRaised = false;
+        private const string PaymentDeviceAlarmCode = "0905";
+
         public FaultHandlingManager(Charger charger)
         {
             _charger = charger ?? throw new ArgumentNullException(nameof(charger));
@@ -95,29 +98,89 @@ namespace EvChargerUI.Services.FaultHandling
             return shouldShowErrorPopup;
         }
 
+        public void RaisePaymentDeviceCommAlarm()
+        {
+            if (_paymentDeviceAlarmRaised)
+                return;
+
+            _logger?.Warn($"[FAULT] PaymentDevice comm alarm RAISING (alarmCode={PaymentDeviceAlarmCode})");
+            try
+            {
+                foreach (var channel in _charger.Channels)
+                {
+                    if (channel == null) continue;
+                    _charger.EvCommService.SendAlarmHistory(
+                        channel.StationId,
+                        channel.ChargerId,
+                        "0",
+                        DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        PaymentDeviceAlarmCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error($"[FAULT] PaymentDevice comm alarm RAISE failed: {ex.Message}");
+            }
+
+            _paymentDeviceAlarmRaised = true;
+            _logger?.Warn($"[FAULT] PaymentDevice comm alarm RAISED (alarmCode={PaymentDeviceAlarmCode})");
+        }
+
+        public void ClearPaymentDeviceCommAlarm()
+        {
+            _logger?.Info($"[FAULT] PaymentDevice comm alarm CLEARING (alarmCode={PaymentDeviceAlarmCode})");
+            try
+            {
+                foreach (var channel in _charger.Channels)
+                {
+                    if (channel == null) continue;
+                    _charger.EvCommService.SendAlarmHistory(
+                        channel.StationId,
+                        channel.ChargerId,
+                        "1",
+                        DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        PaymentDeviceAlarmCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error($"[FAULT] PaymentDevice comm alarm CLEAR failed: {ex.Message}");
+            }
+
+            _paymentDeviceAlarmRaised = false;
+            _logger?.Info($"[FAULT] PaymentDevice comm alarm CLEARED (alarmCode={PaymentDeviceAlarmCode})");
+        }
+
         private void RaiseAlarmHistory(string errorCode)
         {
             if (_alarmRaised)
                 return;
 
             string alarmCode = NormalizeAlarmCode(errorCode);
+            string message = ResolveFaultMessage(true, true, false, errorCode);
 
-            foreach (var channel in _charger.Channels)
+            _logger?.Warn($"[FAULT] RAISING alarmCode={alarmCode} message={message}");
+            try
             {
-                if (channel == null) continue;
-                _charger.EvCommService.SendAlarmHistory(
-                    channel.StationId,
-                    channel.ChargerId,
-                    "0",
-                    DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    alarmCode);
+                foreach (var channel in _charger.Channels)
+                {
+                    if (channel == null) continue;
+                    _charger.EvCommService.SendAlarmHistory(
+                        channel.StationId,
+                        channel.ChargerId,
+                        "0",
+                        DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        alarmCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error($"[FAULT] RAISE SendAlarmHistory failed: {ex.Message}");
             }
 
             _lastAlarmCode = alarmCode;
             _alarmRaised = true;
             _lastLoggedAlarmCode = alarmCode;
-
-            string message = ResolveFaultMessage(true, true, false, errorCode);
 
             _logger?.Warn($"[FAULT] RAISED alarmCode={alarmCode} message={message}");
         }
@@ -128,15 +191,23 @@ namespace EvChargerUI.Services.FaultHandling
                 return;
 
             string clearedAlarmCode = _lastAlarmCode;
-            foreach (var channel in _charger.Channels)
+            _logger?.Info($"[FAULT] CLEARING alarmCode={clearedAlarmCode}");
+            try
             {
-                if (channel == null) continue;
-                _charger.EvCommService.SendAlarmHistory(
-                    channel.StationId,
-                    channel.ChargerId,
-                    "1",
-                    DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    _lastAlarmCode);
+                foreach (var channel in _charger.Channels)
+                {
+                    if (channel == null) continue;
+                    _charger.EvCommService.SendAlarmHistory(
+                        channel.StationId,
+                        channel.ChargerId,
+                        "1",
+                        DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        _lastAlarmCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error($"[FAULT] CLEAR SendAlarmHistory failed: {ex.Message}");
             }
 
             _alarmRaised = false;
