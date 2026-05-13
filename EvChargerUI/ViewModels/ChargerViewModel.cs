@@ -82,6 +82,9 @@ namespace EvChargerUI.ViewModels
         private static readonly TimeSpan _homeInitializeDebounce = TimeSpan.FromMilliseconds(700);
         private int _initializeVersion = 0;
 
+        private int _readyToChargingTimerSessionId = 0;
+        private EventHandler _readyToChargingTimerTickHandler;
+
         /// <summary>
         /// 듀얼 채널 선택 소유권 획득 시도.
         /// 이미 다른 채널이 점유 중이면 false를 반환한다.
@@ -2270,17 +2273,36 @@ namespace EvChargerUI.ViewModels
         private void StartReadyToChargingTimer()
         {
             DisposeReadyToChargingTimer();
-            
+
             int timerSeconds = AppSettingsManager.ChargerTimerSettings.ReadyToChargingViewTimer;
+            int mySessionId = ++_readyToChargingTimerSessionId;
+
             _readyToChargingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(timerSeconds) };
-            _readyToChargingTimer.Tick += ReadyToChargingTimer_Tick;
+            _readyToChargingTimerTickHandler = (s, e) => ReadyToChargingTimer_Tick(mySessionId);
+            _readyToChargingTimer.Tick += _readyToChargingTimerTickHandler;
             _readyToChargingTimer.Start();
-            _logger.Info($"[UI] ReadyToCharging timer started ({timerSeconds} seconds)");
+
+            _logger.Info($"[UI] ReadyToCharging timer started ({timerSeconds} seconds), session={mySessionId}");
         }
 
-        private void ReadyToChargingTimer_Tick(object sender, EventArgs e)
+        private void ReadyToChargingTimer_Tick(int sessionId)
         {
-            // 모달이 떠 있으면 타이머 실행하지 않음
+            // stale tick 방지
+            if (sessionId != _readyToChargingTimerSessionId)
+            {
+                _logger.Warn($"[UI] ReadyToChargingTimer stale tick ignored. fired={sessionId}, current={_readyToChargingTimerSessionId}");
+                return;
+            }
+
+            // PlugConnector 상태가 아니면 절대 초기화 타지 않음
+            if (CurrentChargeSequence != ChargeSequence.PlugConnector)
+            {
+                _logger.Warn($"[UI] ReadyToChargingTimer fired outside PlugConnector (Current={CurrentChargeSequence}). Disposing timer.");
+                DisposeReadyToChargingTimer();
+                return;
+            }
+
+            // 모달 떠있으면 유지
             if (_parentViewModel.PopupView != null || _parentViewModel.IsDimmed)
             {
                 _logger.Info("[UI] ReadyToChargingTimer_Tick fired but popup is open. Timer will continue.");
@@ -2289,16 +2311,21 @@ namespace EvChargerUI.ViewModels
 
             _logger.Info("[UI] ReadyToChargingTimer_Tick fired. Navigating to InitializeCharger (same as home button)");
             DisposeReadyToChargingTimer();
-
-            // 홈 버튼을 누른 것과 동일하게 동작 - InitializeCharger가 PlugConnector 상태일 때의 모든 처리를 수행
             InitializeCharger(null);
         }
 
         private void DisposeReadyToChargingTimer()
         {
-            if (_readyToChargingTimer != null && _readyToChargingTimer.IsEnabled)
+            if (_readyToChargingTimer != null)
             {
                 _logger.Info("[UI] Disposing ReadyToChargingTimer");
+
+                if (_readyToChargingTimerTickHandler != null)
+                {
+                    _readyToChargingTimer.Tick -= _readyToChargingTimerTickHandler;
+                    _readyToChargingTimerTickHandler = null;
+                }
+
                 _readyToChargingTimer.Stop();
                 _readyToChargingTimer = null;
             }
