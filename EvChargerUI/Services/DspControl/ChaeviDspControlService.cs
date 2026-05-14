@@ -199,7 +199,8 @@ namespace EvChargerUI.Services.DspControl
             if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FNHOC-U")
                 data.CylinderFrontForStart = true;
             if (AppSettingsManager.ChargerSettings.ChaeviModelName == "DVC-3FS100W-U")
-                data.CylinderFrontForStop = false;
+                data.CylinderFrontForStop = true;
+                // data.CylinderFrontForStor = false;
             data.Type = MapConnectorType(connectorType);
             _dspControl.RequestWriteRegister(channel);
         }
