@@ -1656,7 +1656,7 @@ namespace EvChargerUI.ViewModels
 
 
                 // 5. 최종 금액 계산 (과결제 시 부분 취소 로직 포함)
-                CalcChargeAmount();
+                await CalcChargeAmount();
                 
                 // 6. UI 동기화 (명시적으로 다시 호출)
                 OnPropertyChanged(nameof(FinalChargeAmount));
@@ -1928,36 +1928,46 @@ namespace EvChargerUI.ViewModels
             SoundService.Instance.PlaySoundAsync("cardreader_member_card.wav");
 
 #if true
-            await _charger.ReadRfCard(_chargerChannel);
-
-            _parentViewModel.ClosePopup();
-            
-            // 회원 카드 읽기 실패 확인 (단말기 연결 안되어 있으면 빈 값 반환)
-            if (string.IsNullOrEmpty(_chargerChannel.MembershipNo))
+            try
             {
-                // 사용자가 취소 버튼을 눌러 중단된 경우 실패 팝업 없이 종료
-                if (_isRfCardCancelledByUser)
+                await _charger.ReadRfCard(_chargerChannel);
+
+                _parentViewModel.ClosePopup();
+                
+                // 회원 카드 읽기 실패 확인 (단말기 연결 안되어 있으면 빈 값 반환)
+                if (string.IsNullOrEmpty(_chargerChannel.MembershipNo))
                 {
-                    _isRfCardCancelledByUser = false;
-                    IsPaymentCancelButtonEnabled = true;
+                    // 사용자가 취소 버튼을 눌러 중단된 경우 실패 팝업 없이 종료
+                    if (_isRfCardCancelledByUser)
+                    {
+                        _isRfCardCancelledByUser = false;
+                        IsPaymentCancelButtonEnabled = true;
+                        return;
+                    }
+
+                    _logger.Warn("[SelectRFCard] Failed to read membership card. MembershipNo is empty.");
+                    SetDefaultPaymentFailMessage();
+                    _parentViewModel.PaymentFailPopup(this);
+                    
                     return;
                 }
+                
+                UserSetCost = 0;
 
-                _logger.Warn("[SelectRFCard] Failed to read membership card. MembershipNo is empty.");
+                Boolean authSuccess = await _charger.RequestMemberCardAuth(_chargerChannel.ChannelNo);
+
+                if (authSuccess)
+                    _parentViewModel.AuthSuccessPopup(this);
+                else
+                    _parentViewModel.AuthFailPopup(this);
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error($"[SelectRFCard] 예외 발생: {ex.Message}\n{ex.StackTrace}");
+                _parentViewModel.ClosePopup();
                 SetDefaultPaymentFailMessage();
                 _parentViewModel.PaymentFailPopup(this);
-                
-                return;
             }
-            
-            UserSetCost = 0;
-
-            Boolean authSuccess = await _charger.RequestMemberCardAuth(_chargerChannel.ChannelNo);
-
-            if (authSuccess)
-                _parentViewModel.AuthSuccessPopup(this);
-            else
-                _parentViewModel.AuthFailPopup(this);
 
 
 #else
@@ -2145,7 +2155,7 @@ namespace EvChargerUI.ViewModels
             return $"{totalMinutes:D2}:{seconds:D2}";
         }
 
-        private bool CalcChargeAmount()
+        private async Task<bool> CalcChargeAmount()
         {
             bool result = false;
 
@@ -2159,7 +2169,14 @@ namespace EvChargerUI.ViewModels
                 {
                     _chargerChannel.CancelChargeAmount = _chargerChannel.UserSetChargeAmount - _chargingCost;
                     _chargerChannel.ChargeAmount = _chargingCost;
-                    _charger.CancelPay(_chargerChannel);
+                    try
+                    {
+                        await _charger.CancelPay(_chargerChannel);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.Error($"[CalcChargeAmount] CancelPay 실패: {ex.Message}");
+                    }
                     CancelCost = _chargerChannel.CancelChargeAmount;
                 }
                 else

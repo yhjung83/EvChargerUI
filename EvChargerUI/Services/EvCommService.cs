@@ -1326,41 +1326,56 @@ namespace EvChargerUI.Services
 
             bool result = false;
 
-            JObject retJObject = _evCommForm.SendUser(session, DateTime.Now);
-
-            if (retJObject != null)
+            try
             {
-                LogForRecv("USER", retJObject);
-                _evCommForm.LogRecvServerComm("USER", retJObject, DateTime.Now);
-                
-                chargerChannel.MembershipNoValidationCode = "-1";
-                if (Convert.ToInt32(jSonParser.GetJSonData(retJObject, "response_receive")) == 1)
+                JObject retJObject = _evCommForm.SendUser(session, DateTime.Now);
+
+                if (retJObject != null)
                 {
-                    chargerChannel.MembershipNoValidationCode = jSonParser.GetJSonData(retJObject, "valid");
-                    chargerChannel.IsChargerPaymentRequired = dataParser.CheckYN(jSonParser.GetJSonData(retJObject, "charger_pay_yn"));
+                    LogForRecv("USER", retJObject);
+                    _evCommForm.LogRecvServerComm("USER", retJObject, DateTime.Now);
 
-                    result = "1" == chargerChannel.MembershipNoValidationCode;
+                    chargerChannel.MembershipNoValidationCode = "-1";
+
+                    string responseReceiveStr = jSonParser.GetJSonData(retJObject, "response_receive");
+                    if (int.TryParse(responseReceiveStr, out int responseReceive) && responseReceive == 1)
+                    {
+                        chargerChannel.MembershipNoValidationCode = jSonParser.GetJSonData(retJObject, "valid");
+                        chargerChannel.IsChargerPaymentRequired = dataParser.CheckYN(jSonParser.GetJSonData(retJObject, "charger_pay_yn"));
+
+                        result = "1" == chargerChannel.MembershipNoValidationCode;
+                    }
+
+                    IsServerConnected = true;
+
+                    if (result)
+                    {
+                        chargerChannel.MemberCompanyCode = jSonParser.GetJSonData(retJObject, "member_company");
+                        string unitCostStr = jSonParser.GetJSonData(retJObject, "current_unit_cost");
+                        chargerChannel.CurrentUserUnitCost = float.TryParse(unitCostStr, out float unitCost)
+                            ? unitCost
+                            : ChargerChannel.DefaultUnitCost;
+                    }
+                    else
+                    {
+                        chargerChannel.MemberCompanyCode = "";
+                        chargerChannel.CurrentUserUnitCost = ChargerChannel.DefaultUnitCost;
+                    }
                 }
-                
-                IsServerConnected = true;
+                else
+                {
+                    _logger.Error("[RECV] USER : no response!!!");
+                    IsServerConnected = false;
+                    chargerChannel.MemberCompanyCode = "";
+                    chargerChannel.CurrentUserUnitCost = ChargerChannel.DefaultUnitCost;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.Error("[RECV] USER : no response!!!");
+                _logger.Error($"[SendUser] 예외 발생: {ex.Message}");
                 IsServerConnected = false;
-            }
-
-            if (result)
-            {
-                chargerChannel.MemberCompanyCode = jSonParser.GetJSonData(retJObject, "member_company");
-                chargerChannel.CurrentUserUnitCost = Convert.ToSingle(jSonParser.GetJSonData(retJObject, "current_unit_cost"));
-
-            }
-            else
-            {
                 chargerChannel.MemberCompanyCode = "";
                 chargerChannel.CurrentUserUnitCost = ChargerChannel.DefaultUnitCost;
-
             }
 
             return result;

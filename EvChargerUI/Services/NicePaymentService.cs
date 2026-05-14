@@ -172,33 +172,37 @@ namespace EvChargerUI.Services
         {
             return Task.Run(() =>
             {
-                string fs = ((char)28).ToString();
-                cancelCost = MoneyUtil.TruncateWonUnit(cancelCost);
-                int tax = (int)((double)cancelCost - (double)cancelCost / 1.1);
-
-                int totalCost = Int32.Parse(paymentInfo.TotalCost);
-                int totalTax = (int)((double)totalCost - (double)totalCost / 1.1);
-
-                string sendData;
-                if (totalCost == cancelCost || (totalCost - cancelCost) < 100)
-                    sendData = "0420" + fs + "10" + fs + "N" + fs + totalCost.ToString() + fs + totalTax.ToString() + fs + "0" + fs + "00" + fs + paymentInfo.AuthNum + fs + paymentInfo.PayDate + fs + "" + fs + fs + fs + paymentInfo.PgNum + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs;
-                else
-                    sendData = "0520" + fs + "30" + fs + "N" + fs + cancelCost.ToString() + fs + tax.ToString() + fs + "0" + fs + "00" + fs + paymentInfo.AuthNum + fs + paymentInfo.PayDate + fs + "" + fs + fs + fs + paymentInfo.PgNum + fs + fs + fs + fs + fs + "" + fs + "P" + paymentInfo.TotalCost + fs + "PCL" + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs;
-
-                byte[] mSend = Encoding.GetEncoding(1252).GetBytes(sendData);
-                byte[] mRecv = new byte[2048];
-
                 bool retVal = false;
-                int ret = 0;
-                Exception caught = null;
                 try
                 {
-                    ret = NICEVCAT(mSend, mRecv);
+                    if (paymentInfo == null)
+                    {
+                        _logger?.Warn("[NicePaymentService] CancelPay - paymentInfo is null, skipping cancel.");
+                        return false;
+                    }
+
+                    string fs = ((char)28).ToString();
+                    cancelCost = MoneyUtil.TruncateWonUnit(cancelCost);
+                    int tax = (int)((double)cancelCost - (double)cancelCost / 1.1);
+
+                    int totalCost = Int32.Parse(paymentInfo.TotalCost);
+                    int totalTax = (int)((double)totalCost - (double)totalCost / 1.1);
+
+                    string sendData;
+                    if (totalCost == cancelCost || (totalCost - cancelCost) < 100)
+                        sendData = "0420" + fs + "10" + fs + "N" + fs + totalCost.ToString() + fs + totalTax.ToString() + fs + "0" + fs + "00" + fs + paymentInfo.AuthNum + fs + paymentInfo.PayDate + fs + "" + fs + fs + fs + paymentInfo.PgNum + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs;
+                    else
+                        sendData = "0520" + fs + "30" + fs + "N" + fs + cancelCost.ToString() + fs + tax.ToString() + fs + "0" + fs + "00" + fs + paymentInfo.AuthNum + fs + paymentInfo.PayDate + fs + "" + fs + fs + fs + paymentInfo.PgNum + fs + fs + fs + fs + fs + "" + fs + "P" + paymentInfo.TotalCost + fs + "PCL" + fs + fs + fs + fs + fs + fs + fs + fs + fs + fs;
+
+                    byte[] mSend = Encoding.GetEncoding(1252).GetBytes(sendData);
+                    byte[] mRecv = new byte[2048];
+
+                    int ret = NICEVCAT(mSend, mRecv);
                     retVal = ret == 1;
                 }
                 catch (Exception ex)
                 {
-                    caught = ex;
+                    _logger?.Error($"[NicePaymentService] CancelPay - exception: {ex.Message}");
                 }
                 return retVal;
             });
