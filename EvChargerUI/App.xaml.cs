@@ -175,16 +175,6 @@ namespace EvChargerUI
                 AdminWindow = null;
             }
 
-            try
-            {
-                var systemSettingsService = new SystemSettingsService();
-                bool taskbarEnabled = systemSettingsService.SetTaskbarEnabled(true);
-                AppLogger?.Info($"[App] Taskbar enabled when exiting admin mode: {taskbarEnabled}");
-            }
-            catch (Exception ex)
-            {
-                AppLogger?.Error($"[App] Failed to enable taskbar when exiting admin mode: {ex.Message}");
-            }
 
         }
 

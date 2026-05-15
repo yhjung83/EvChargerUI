@@ -280,14 +280,6 @@ namespace EvChargerUI.Services
         {
             try
             {
-#if DEBUG
-                if (!isEnabled)
-                {
-                    _logger?.Info("[SystemSettings] Debug build - skipping taskbar disable request.");
-                    return true;
-                }
-#endif
-
                 // 주/보조 모니터 작업표시줄 핸들 획득
                 List<IntPtr> taskbarHandles = new List<IntPtr>();
 

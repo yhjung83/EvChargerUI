@@ -30,39 +30,32 @@ namespace EvChargerUI.Views
         }
 
         /// <summary>
-        /// AdminWindow가 로드되었을 때 작업표시줄 활성화
+        /// AdminWindow가 로드되었을 때 작업표시줄 비활성화 유지
         /// </summary>
         private void AdminWindow_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                bool taskbarEnabled = _systemSettingsService.SetTaskbarEnabled(true);
+                bool taskbarDisabled = _systemSettingsService.SetTaskbarEnabled(false);
                 var app = (App)Application.Current;
-                app.AppLogger.Info($"[AdminWindow] Taskbar enabled when admin window opened: {taskbarEnabled}");
+                app.AppLogger.Info($"[AdminWindow] Taskbar kept disabled when admin window opened: {taskbarDisabled}");
             }
             catch (Exception ex)
             {
                 var app = (App)Application.Current;
-                app.AppLogger.Error($"[AdminWindow] Failed to enable taskbar on window load: {ex.Message}");
+                app.AppLogger.Error($"[AdminWindow] Failed to keep taskbar disabled on window load: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// AdminWindow가 닫혔을 때 작업표시줄 비활성화
+        /// AdminWindow가 닫혔을 때 작업표시줄 비활성화 유지
         /// </summary>
         private void AdminWindow_Closed(object sender, EventArgs e)
         {
             try
             {
-                var app = (App)Application.Current;
-                if (app != null && app.MainView != null)
-                {
-                    // 관리자 모드 나가기(메인 UI 전환) 시에는 작업표시줄 활성 상태 유지
-                    app.AppLogger.Info("[AdminWindow] Keep taskbar enabled on admin exit to main view.");
-                    return;
-                }
-
                 bool taskbarDisabled = _systemSettingsService.SetTaskbarEnabled(false);
+                var app = (App)Application.Current;
                 app?.AppLogger.Info($"[AdminWindow] Taskbar disabled when admin window closed: {taskbarDisabled}");
             }
             catch (Exception ex)

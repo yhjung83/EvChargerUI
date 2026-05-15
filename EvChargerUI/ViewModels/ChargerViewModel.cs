@@ -1823,6 +1823,7 @@ namespace EvChargerUI.ViewModels
             }
             // 채널 초기화 후 ViewModel 설정금액 UI도 함께 초기화 (이전 결제 금액이 남는 것 방지)
             UserSetCost = 0;
+            CancelCost = 0;
             // 커넥터 타입 속성 업데이트 알림
             OnPropertyChanged(nameof(ConnectorTypeIcon));
             OnPropertyChanged(nameof(ConnectorTypeText));
@@ -2183,6 +2184,7 @@ namespace EvChargerUI.ViewModels
                 {
                     _chargerChannel.CancelChargeAmount = 0;
                     _chargerChannel.ChargeAmount = _chargerChannel.UserSetChargeAmount;
+                    CancelCost = 0;
                 }
             }
             else
@@ -2190,6 +2192,7 @@ namespace EvChargerUI.ViewModels
                 _chargerChannel.UserSetChargeAmount = 0;
                 _chargerChannel.CancelChargeAmount = 0;
                 _chargerChannel.ChargeAmount = _chargingCost;
+                CancelCost = 0;
             }
 
             OnPropertyChanged(nameof(DepositAmount));
@@ -2809,6 +2812,9 @@ namespace EvChargerUI.ViewModels
 
         private void ConfirmCalcChargeAmount(object param)
         {
+            // 사전결제 정산 안내 확인 후에는 재노출되지 않도록 상태를 정리한다.
+            _chargerChannel.CancelChargeAmount = 0;
+            CancelCost = 0;
             CurrentView = _completeView;
         }
 
