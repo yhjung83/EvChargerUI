@@ -349,15 +349,27 @@ namespace EvChargerUI.Services.DspControl
             try
             {
                 RxData data = _dspControl.GetRxData(channel);
-                ushort fc = data.FaultCode;
-                if (fc >= 10000)
-                    return (fc / 100).ToString();
-                return fc.ToString();
+                return ParseChaeviFaultCode(data.FaultCode);
             }
             catch
             {
                 return "";
             }
+        }
+
+        /// <summary>
+        /// Chaevi FaultCode(16bit): [4bit 백의자리][4bit 두자리][8bit] — 표시·전송에는 앞 8bit만 사용.
+        /// 예) 0x1203 → 백의자리 1, 두자리 02 → "102"
+        /// </summary>
+        internal static string ParseChaeviFaultCode(ushort rawFaultCode)
+        {
+            if (rawFaultCode == 0)
+                return "";
+
+            int hundreds = (rawFaultCode >> 12) & 0xF;
+            int twoDigits = (rawFaultCode >> 8) & 0xF;
+            int code = hundreds * 100 + twoDigits;
+            return code == 0 ? "" : code.ToString();
         }
 
         public string GetPowerModuleStatusBits(int channel) => "0000000000000000";
