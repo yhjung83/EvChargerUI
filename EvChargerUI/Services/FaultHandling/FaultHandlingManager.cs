@@ -84,7 +84,8 @@ namespace EvChargerUI.Services.FaultHandling
                 string currentAlarmCode = NormalizeAlarmCode(errorCode);
                 if (_alarmRaised && _lastLoggedAlarmCode != null && !string.Equals(_lastLoggedAlarmCode, currentAlarmCode, StringComparison.Ordinal))
                 {
-                    string message = ResolveFaultMessage(dspStatus, networkStatus, pmsStatus, errorCode);
+                    string message = EnrichFaultLogMessage(
+                        ResolveFaultMessage(dspStatus, networkStatus, pmsStatus, errorCode));
                     _logger?.Warn($"[FAULT] UPDATED alarmCode={currentAlarmCode} message={message}");
                     _lastLoggedAlarmCode = currentAlarmCode;
                 }
@@ -157,7 +158,8 @@ namespace EvChargerUI.Services.FaultHandling
                 return;
 
             string alarmCode = NormalizeAlarmCode(errorCode);
-            string message = ResolveFaultMessage(true, true, false, errorCode);
+            string message = EnrichFaultLogMessage(
+                ResolveFaultMessage(true, true, false, errorCode));
 
             _logger?.Warn($"[FAULT] RAISING alarmCode={alarmCode} message={message}");
             try
@@ -290,10 +292,84 @@ namespace EvChargerUI.Services.FaultHandling
                     if (!string.IsNullOrWhiteSpace(detail))
                         return detail;
                 }
+
+                if (_charger.DspControlService is ChaeviDspControlService)
+                {
+                    string chaeviDetail = TryGetChaeviFaultDetail();
+                    if (!string.IsNullOrWhiteSpace(chaeviDetail))
+                        return $"{mapped} | {chaeviDetail}";
+                }
+
                 return mapped;
             }
 
             return string.IsNullOrWhiteSpace(errorCode) ? "알 수 없는 오류" : $"Error code {errorCode}";
+        }
+
+        private string EnrichFaultLogMessage(string baseMessage)
+        {
+            string chaeviDetail = TryGetChaeviFaultDetail();
+            if (string.IsNullOrWhiteSpace(chaeviDetail))
+                return baseMessage;
+            if (string.IsNullOrWhiteSpace(baseMessage))
+                return chaeviDetail;
+            if (baseMessage.IndexOf(chaeviDetail, StringComparison.Ordinal) >= 0)
+                return baseMessage;
+            return $"{baseMessage} | {chaeviDetail}";
+        }
+
+        /// <summary>
+        /// Chaevi: FaultCode 16bit(대분류/Code/세부 8bit) 프로토콜 문서 기준 설명.
+        /// </summary>
+        private string TryGetChaeviFaultDetail()
+        {
+            if (!(_charger.DspControlService is ChaeviDspControlService chaevi))
+                return null;
+
+            ChargerChannel[] channels = _charger.Channels;
+            if (channels == null)
+                return null;
+
+            foreach (ChargerChannel ch in channels)
+            {
+                if (ch == null)
+                    continue;
+
+                try
+                {
+                    if (!chaevi.GetFaultStatus(ch.ChannelNo))
+                        continue;
+
+                    string detail = chaevi.GetFaultDetails(ch.ChannelNo);
+                    if (!string.IsNullOrWhiteSpace(detail))
+                        return detail;
+                }
+                catch
+                {
+                }
+            }
+
+            foreach (ChargerChannel ch in channels)
+            {
+                if (ch == null)
+                    continue;
+
+                try
+                {
+                    ushort raw = chaevi.GetRawFaultCode(ch.ChannelNo);
+                    if (raw == 0)
+                        continue;
+
+                    string detail = chaevi.GetFaultDetails(ch.ChannelNo);
+                    if (!string.IsNullOrWhiteSpace(detail))
+                        return detail;
+                }
+                catch
+                {
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

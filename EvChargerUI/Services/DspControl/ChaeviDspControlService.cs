@@ -366,10 +366,38 @@ namespace EvChargerUI.Services.DspControl
             if (rawFaultCode == 0)
                 return "";
 
-            int hundreds = (rawFaultCode >> 12) & 0xF;
-            int twoDigits = (rawFaultCode >> 8) & 0xF;
-            int code = hundreds * 100 + twoDigits;
-            return code == 0 ? "" : code.ToString();
+            ChaeviFaultCodeCatalog.ParsedFault parsed = ChaeviFaultCodeCatalog.Parse(rawFaultCode);
+            return parsed.DisplayCode == 0 ? "" : parsed.DisplayCode.ToString();
+        }
+
+        /// <summary>
+        /// 프로토콜 문서 기준 대분류/Code/세부항목(8bit) 설명. A/S 로그용.
+        /// </summary>
+        public string GetFaultDetails(int channel)
+        {
+            try
+            {
+                RxData data = _dspControl.GetRxData(channel);
+                if (!data.IsFaultOccured && data.FaultCode == 0)
+                    return "";
+                return ChaeviFaultCodeCatalog.FormatLogDescription(data.FaultCode);
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        public ushort GetRawFaultCode(int channel)
+        {
+            try
+            {
+                return _dspControl.GetRxData(channel).FaultCode;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public string GetPowerModuleStatusBits(int channel) => "0000000000000000";
